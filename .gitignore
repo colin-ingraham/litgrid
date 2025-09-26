@@ -1,0 +1,18 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python and Django specific files
+__pycache__/
+*.pyc
+*.log
+*.sqlite3
+db.sqlite3
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Security
+/config/settings/local.py # If you use separate local settings
