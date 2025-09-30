@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -6,9 +8,69 @@
         <title>Litgrid Daily</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
+        <link href="{% static 'style.css' %}" rel="stylesheet" />
     </head>
     <body>
-        <h1> Hello Litgrid </h1>
+        <h1 class="header"> Litgrid </h1>
+        <div class="container">
+            <div class="blank" id="col1"> 
+            </div>
+
+            <div class="col-header box" id="col2"> 
+                <h2 class="header-text"> Col 2 </h2>
+            </div>
+
+            <div class="col-header box" id="col3"> 
+                <h2 class="header-text"> Col 3 </h2>
+            </div>
+
+            <div class="col-header box" id="col4"> 
+                <h2 class="header-text"> Col 4 </h2>
+            </div>
+            
+            <div class="row-header box" id="row1"> 
+                <h2 class="header-text"> Row 1 </h2>
+            </div>
+
+            <div class="row-header box" id="row2"> 
+                <h2 class="header-text"> Row 2 </h2>
+            </div>
+            
+            <div class="row-header box" id="row3"> 
+                <h2 class="header-text"> Row 3 </h2>
+            </div>
+
+            <div class="box input-box" id="box-1-1"> 
+            </div>
+
+            <div class="box input-box" id="box-1-2"> 
+            </div>
+
+            <div class="box input-box" id="box-1-3"> 
+            </div>
+
+            <div class="box input-box" id="box-2-1"> 
+            </div>
+
+            <div class="box input-box" id="box-2-2"> 
+            </div>
+
+            <div class="box input-box" id="box-2-3"> 
+            </div>
+
+            <div class="box input-box" id="box-3-1"> 
+            </div>
+
+            <div class="box input-box" id="box-3-2"> 
+            </div>
+
+            <div class="box input-box" id="box-3-3"> 
+            </div>
+            
+
+        
+
+    
+        </div>
     </body>
 </html>
