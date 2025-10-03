@@ -76,10 +76,15 @@ WSGI_APPLICATION = 'litgrid.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',         # <-- Choose a name for your new database
+        'USER': 'postgres',           # <-- Your PostgreSQL username (often 'postgres' initially)
+        'PASSWORD': 'R0adrace', # <-- Your PostgreSQL password
+        'HOST': '127.0.0.1',            # <-- Where the database server is running
+        'PORT': '5432',                 # <-- Default PostgreSQL port
     }
 }
+
 
 
 # Password validation
