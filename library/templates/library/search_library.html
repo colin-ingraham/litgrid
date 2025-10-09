@@ -1,0 +1,22 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Search Book</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="{% static 'style.css' %}" rel="stylesheet" />
+    </head>
+    <body>
+        <h1 class="header"> Search for a book to see if it is in the Litgrid Database! </h1>
+        <form method="POST" action="{% url 'search_library' %}">
+            {% csrf_token %}
+            <input name="user_text_input">
+            <button type='submit'>Search for Title</button>
+        </form>
+
+    </body>
+</html>
