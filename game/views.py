@@ -9,16 +9,19 @@ class DailyGame(View):
 
 def BookSearchData(request):
     if request.method == 'POST':
-        title_input = request.POST.get('user_text_input', "")
-        book = Book.objects.get(title=title_input)
-        if book:
+        title_input = request.POST.get('user_text_input', "").strip()
+        try:
+            book = Book.objects.get(title__iexact=title_input)
             url = f"https://covers.openlibrary.org/b/id/{book.cover_id}-M.jpg"
-            book_data = {
+            return JsonResponse({
+                "success": True,
                 "title": book.title,
-                "author": book.author,
+                "author": book.author.name,
                 "url": url,
-            }
-            return JsonResponse(book_data)
-        else:
-            return JsonResponse({"success": False, "error": "Book not found."}, status=404)
+            })
+        except Book.DoesNotExist:
+            return JsonResponse({
+                "success": False, 
+                "error": f"Book '{title_input}' not found in database."
+            }, status=404)
     return JsonResponse({"success": False, "error": "An error occurred."}, status=500)
