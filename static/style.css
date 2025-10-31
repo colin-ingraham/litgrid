@@ -64,4 +64,47 @@ body {
     grid-area: 4 / 1 / 4 / 1; 
 }
 
+#modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#modal-container {
+    background-color: var(--primary-charcoal);
+    padding: 20px 40px;
+    max-width: 600px;
+    width: 90%;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+
+    
+}
+
+#modal-container input[type="search"] {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid var(--primary-gold);
+    border-radius: 5px;
+    font-size: 1.2em;
+    background-color: var(--primary-black);
+    color: var(--primary-beige)
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  display: none;
+}

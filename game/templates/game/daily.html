@@ -72,5 +72,17 @@
 
     
         </div>
+
+        <div id="modal-backdrop" class="hidden">
+            <div id="modal-container">
+                <input type="search" id="book-input">
+            </div>
+        </div>
+        {% csrf_token %}
+        <script>
+            const BOOK_SEARCH_URL = "{% url 'book-search' %}";
+        </script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> 
+        <script src="{% static 'game/index.js' %}" charset="utf-8"> </script> 
     </body>
 </html>
