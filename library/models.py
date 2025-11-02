@@ -6,6 +6,7 @@ class Author(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     name = models.CharField(max_length=200)
+    nationality = models.CharField(max_length=200, default="Unknown")
     key = models.CharField(max_length=20)
 
     def __str__(self):
