@@ -1,0 +1,5 @@
+Reference gemini about fixing the language filter (its most recent message)
+Figure out how to get more book data for books
+Subjects need filtering and cleaning
+
+Once these are done database should be better off

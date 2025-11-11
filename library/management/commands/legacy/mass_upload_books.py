@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from library.models import Book, Author, Subject
 from django.db import transaction
 import time
-from library.management.commands.fetch_book_data import Command as FetchCommand
+from library.management.commands.legacy.fetch_book_data import Command as FetchCommand
 
 MAX_WORKERS = 8
 
