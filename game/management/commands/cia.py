@@ -70,6 +70,26 @@ Metadata ( 1-2 Per Round )
 
 """
 
+
+
+""" NEW BOOK MODEL 
+- Track Region, City, Fictional World
+- All primary genres
+- Author
+- Publish Date
+- Is NYTBS 
+- Is Banned
+- Length
+- Environment
+
+NEW AUTHOR MODEL
+- Name
+- Country
+- Debut Novel
+- Gender
+
+"""
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
@@ -87,11 +107,7 @@ class Command(BaseCommand):
 
     def choose_genre(self):
         # A genre will always be one of the categories, chosen from this specific list.
-        PRIMARY_GENRES = ["science fiction", "historical fiction", "fantasy", "novela", 
-                    "classic literature", "american literature", "classics", "african americans", 
-                    "politics and government", "horror", "humor", "adventure", "thriller", "nonfiction", 
-                    "romance", "drama", "detective and mystery stories", 
-                    "psychological fiction", "children's fiction"]
+        PRIMARY_GENRES = []
         genre = random.choice(PRIMARY_GENRES)
         return genre
     
@@ -99,8 +115,3 @@ class Command(BaseCommand):
         # A setting category will always be one of the categories, chosen by this method.
         settingOptions = ["Region", "City", "Fictional", "Event", "Environment", "Event"]
         settingCat = random.choice(settingOptions)
-
-        if settingCat == "Fictional":
-            return ""
-        
-    

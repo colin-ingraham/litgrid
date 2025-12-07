@@ -1,88 +1,93 @@
 {% load static %}
-
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Litgrid Daily</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="{% static 'style.css' %}" rel="stylesheet" />
-    </head>
-    <body>
-        <h1 class="header"> Litgrid </h1>
-        <div class="container">
-            <div class="blank" id="col1"> 
-            </div>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Litgrid Daily</title>
+    <meta name="description" content="A book guessing grid game based on category intersections.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'style.css' %}" rel="stylesheet" />
+    <!-- Using a modern font for a professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="game-header">
+        <h1 class="header-title">Litgrid</h1>
+        <p class="header-subtitle">The Daily Literary Puzzle</p>
+    </header>
 
-            <div class="col-header box" id="col2"> 
-                <h2 class="header-text"> Col 2 </h2>
-            </div>
+    <!-- Game Status Bar (Added for professional touch) -->
+    <div class="game-info-container">
+        <div class="stat-box">
+            <span class="stat-value">6</span>
+            <span class="stat-label">Guesses Remaining</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-value">0 / 9</span>
+            <span class="stat-label">Books Solved</span>
+        </div>
+    </div>
 
-            <div class="col-header box" id="col3"> 
-                <h2 class="header-text"> Col 3 </h2>
-            </div>
+    <main class="container">
+        <!-- Grid Headers: Row 1 (Columns) -->
+        <div class="grid-cell blank-cell"></div>
 
-            <div class="col-header box" id="col4"> 
-                <h2 class="header-text"> Col 4 </h2>
-            </div>
-            
-            <div class="row-header box" id="row1"> 
-                <h2 class="header-text"> Row 1 </h2>
-            </div>
-
-            <div class="row-header box" id="row2"> 
-                <h2 class="header-text"> Row 2 </h2>
-            </div>
-            
-            <div class="row-header box" id="row3"> 
-                <h2 class="header-text"> Row 3 </h2>
-            </div>
-
-            <div class="box input-box" id="box-1-1"> 
-            </div>
-
-            <div class="box input-box" id="box-1-2"> 
-            </div>
-
-            <div class="box input-box" id="box-1-3"> 
-            </div>
-
-            <div class="box input-box" id="box-2-1"> 
-            </div>
-
-            <div class="box input-box" id="box-2-2"> 
-            </div>
-
-            <div class="box input-box" id="box-2-3"> 
-            </div>
-
-            <div class="box input-box" id="box-3-1"> 
-            </div>
-
-            <div class="box input-box" id="box-3-2"> 
-            </div>
-
-            <div class="box input-box" id="box-3-3"> 
-            </div>
-            
-
+        <div class="grid-cell col-header" data-col="1">
+            <p class="header-text">NYT Bestseller</p>
+        </div>
+        <div class="grid-cell col-header" data-col="2">
+            <p class="header-text">Books from the 19th Century</p>
+        </div>
+        <div class="grid-cell col-header" data-col="3">
+            <p class="header-text">Books under 200 pages</p>
+        </div>
         
-
-    
+        <!-- Row 2: Category + Input Cells -->
+        <div class="grid-cell row-header" data-row="1">
+            <p class="header-text">Books with the subject 'War'</p>
         </div>
+        <div class="grid-cell input-box" id="box-1-1" data-row="1" data-col="1"><span class="placeholder-text">Click to Guess</span></div>
+        <div class="grid-cell input-box" id="box-1-2" data-row="1" data-col="2"><span class="placeholder-text">Click to Guess</span></div>
+        <div class="grid-cell input-box" id="box-1-3" data-row="1" data-col="3"><span class="placeholder-text">Click to Guess</span></div>
 
-        <div id="modal-backdrop" class="hidden">
-            <div id="modal-container">
-                <input type="search" id="book-input">
+        <!-- Row 3: Category + Input Cells -->
+        <div class="grid-cell row-header" data-row="2">
+            <p class="header-text">Historical Fiction</p>
+        </div>
+        <div class="grid-cell input-box" id="box-2-1" data-row="2" data-col="1"><span class="placeholder-text">Click to Guess</span></div>
+        <div class="grid-cell input-box" id="box-2-2" data-row="2" data-col="2"><span class="placeholder-text">Click to Guess</span></div>
+        <div class="grid-cell input-box" id="box-2-3" data-row="2" data-col="3"><span class="placeholder-text">Click to Guess</span></div>
+        
+        <!-- Row 4: Category + Input Cells -->
+        <div class="grid-cell row-header" data-row="3">
+            <p class="header-text">An author's debut novel</p>
+        </div>
+        <div class="grid-cell input-box" id="box-3-1" data-row="3" data-col="1"><span class="placeholder-text">Click to Guess</span></div>
+        <div class="grid-cell input-box" id="box-3-2" data-row="3" data-col="2"><span class="placeholder-text">Click to Guess</span></div>
+        <div class="grid-cell input-box" id="box-3-3" data-row="3" data-col="3"><span class="placeholder-text">Click to Guess</span></div>
+        
+    </main>
+
+    <!-- Modal for Book Search -->
+    <div id="modal-backdrop" class="hidden">
+        <div id="modal-container">
+            <h3 class="modal-title">Guess the Book</h3>
+            <p class="modal-coords-text" id="modal-coords"></p>
+            <input type="search" id="book-input" placeholder="Search for a book title..." autocomplete="off">
+            <div id="search-results" class="search-results">
+                <!-- Search results will be injected here -->
             </div>
+            <button id="modal-close-btn" class="close-button">Close</button>
         </div>
-        {% csrf_token %}
-        <script>
-            const BOOK_SEARCH_URL = "{% url 'book-search' %}";
-        </script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> 
-        <script src="{% static 'game/index.js' %}" charset="utf-8"> </script> 
-    </body>
+    </div>
+
+    {% csrf_token %}
+    <script>
+        const BOOK_SEARCH_URL = "/api/book-search/"; 
+        const BOOK_VALIDATE_URL = "/api/validate-guess/";
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> 
+    <script src="{% static 'game/index.js' %}" charset="utf-8"></script>
+</body>
 </html>

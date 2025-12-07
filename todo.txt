@@ -1,5 +1,23 @@
-Reference gemini about fixing the language filter (its most recent message)
-Figure out how to get more book data for books
-Subjects need filtering and cleaning
+1. Get a view in Game App that returns all the current categories for rows and cols. Have that get pulled into the HTML
+2. Fix the weird shape of the Game Board
+3. Finish the basic workings of validate_cell in order to get Test Board 1 workings
+4. Send over CategoryCodes instead of the entire Category String
+5. Test and try to implement for this given test board.
 
-Once these are done database should be better off
+
+
+
+
+
+Test Board 1:
+Col 1 : Author with abbreivation in name (i.e. A. Lincoln)
+Col 2 : Books from the 19th Century
+Col 3 : Books under 200 pages
+
+Row 1 : Books with the subject 'War'
+Row 2 : Historical Fiction
+Row 3 : Literary Fiction
+
+
+Here are current steps for ME to code:
+2. Get Test Board 1 to be properly functioning in the Litgrid game. Make it work the way it is supposed to.]

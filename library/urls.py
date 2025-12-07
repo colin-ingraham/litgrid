@@ -3,6 +3,6 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    path('', views.SearchView.as_view(), name="search_library"),
-
+    path('book-search/', views.book_search, name='book-search'),
+    path('validate-guess/', views.save_and_validate_guess, name='validate-guess'),
 ]
