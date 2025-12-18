@@ -18,56 +18,87 @@
     </header>
 
     <!-- Game Status Bar (Added for professional touch) -->
-    <div class="game-info-container">
-        <div class="stat-box">
-            <span class="stat-value">6</span>
-            <span class="stat-label">Guesses Remaining</span>
+    <div class="status-wrapper">
+        
+        <div class="game-info-container">
+            <div class="stat-box">
+                <span class="stat-value">6</span>
+                <span class="stat-label">Guesses Remaining</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-value">0 / 9</span>
+                <span class="stat-label">Books Solved</span>
+            </div>
         </div>
-        <div class="stat-box">
-            <span class="stat-value">0 / 9</span>
-            <span class="stat-label">Books Solved</span>
+
+        <div class="side-icons">
+            <button id="help-trigger-btn" class="help-icon-btn" aria-label="How to play">?</button>
+            </div>
+
+    </div>
+
+    <div id="help-modal-backdrop" class="hidden">
+        <div id="help-modal-container">
+            <h2 class="help-title">How To Play</h2>
+            
+            <div class="help-content">
+                <div class="help-step">
+                    <span class="step-number">1</span>
+                    <p><strong>Select a Cell:</strong> Tap any empty square in the grid to start searching.</p>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">2</span>
+                    <p><strong>Find a Match:</strong> Search for a book that fits <em>both</em> the <strong>Row Category</strong> (left) and <strong>Column Category</strong> (top).</p>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">3</span>
+                    <p><strong>Watch Your Guesses:</strong> You have <strong>9 cells</strong> to solve and only <strong>12 guesses</strong> total. Incorrect guesses cost you!</p>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">4</span>
+                    <p><strong>Unique Titles:</strong> Each book can only be used once per game.</p>
+                </div>
+            </div>
+
+            <div class="help-footer">
+                <button id="start-game-btn" class="action-button">Let's Play!</button>
+            </div>
         </div>
     </div>
 
-    <main class="container">
-        <!-- Grid Headers: Row 1 (Columns) -->
-        <div class="grid-cell blank-cell"></div>
+    <div class="game-board-wrapper">
+        <main class="container">
+            <!-- Grid Headers: Row 1 (Columns) -->
+            <div class="grid-cell blank-cell"></div>
 
-        <div class="grid-cell col-header" data-col="1">
-            <p class="header-text">NYT Bestseller</p>
-        </div>
-        <div class="grid-cell col-header" data-col="2">
-            <p class="header-text">Books from the 19th Century</p>
-        </div>
-        <div class="grid-cell col-header" data-col="3">
-            <p class="header-text">Books under 200 pages</p>
-        </div>
-        
-        <!-- Row 2: Category + Input Cells -->
-        <div class="grid-cell row-header" data-row="1">
-            <p class="header-text">Books with the subject 'War'</p>
-        </div>
-        <div class="grid-cell input-box" id="box-1-1" data-row="1" data-col="1"><span class="placeholder-text">Click to Guess</span></div>
-        <div class="grid-cell input-box" id="box-1-2" data-row="1" data-col="2"><span class="placeholder-text">Click to Guess</span></div>
-        <div class="grid-cell input-box" id="box-1-3" data-row="1" data-col="3"><span class="placeholder-text">Click to Guess</span></div>
+            {% for category in col_categories %}
+                <div class="grid-cell col-header" data-col="1">
+                    <p class="header-text">{{ category }}</p>
+                </div>
+            {% endfor %}
+            
+            {% for row_category in row_categories %}
+                <!-- Row Header -->
+                <div class="grid-cell row-header">
+                    <p class="header-text">{{ row_category }}</p>
+                </div>
+                
+                <!-- Input Cells (3 cells per row) -->
+                {% for i in "123" %}
+                    {% with row_index=forloop.parentloop.counter col_index=forloop.counter %}
+                        <div class="grid-cell input-box" data-row="{{ row_index }}" data-col="{{ col_index }}">
+                        </div>
+                    {% endwith %}
+                {% endfor %}
+            {% endfor %}
 
-        <!-- Row 3: Category + Input Cells -->
-        <div class="grid-cell row-header" data-row="2">
-            <p class="header-text">Historical Fiction</p>
+        </main>
+        <button id="give-up-btn" class="action-button">Give Up</button>
+        <div id="post-game-controls" class="post-game-container hidden">
+            <button id="see-results-btn" class="action-button">See Results</button>
+            <button id="archives-btn" class="action-button">Archives</button>
         </div>
-        <div class="grid-cell input-box" id="box-2-1" data-row="2" data-col="1"><span class="placeholder-text">Click to Guess</span></div>
-        <div class="grid-cell input-box" id="box-2-2" data-row="2" data-col="2"><span class="placeholder-text">Click to Guess</span></div>
-        <div class="grid-cell input-box" id="box-2-3" data-row="2" data-col="3"><span class="placeholder-text">Click to Guess</span></div>
-        
-        <!-- Row 4: Category + Input Cells -->
-        <div class="grid-cell row-header" data-row="3">
-            <p class="header-text">An author's debut novel</p>
-        </div>
-        <div class="grid-cell input-box" id="box-3-1" data-row="3" data-col="1"><span class="placeholder-text">Click to Guess</span></div>
-        <div class="grid-cell input-box" id="box-3-2" data-row="3" data-col="2"><span class="placeholder-text">Click to Guess</span></div>
-        <div class="grid-cell input-box" id="box-3-3" data-row="3" data-col="3"><span class="placeholder-text">Click to Guess</span></div>
-        
-    </main>
+    </div>
 
     <!-- Modal for Book Search -->
     <div id="modal-backdrop" class="hidden">
@@ -81,7 +112,33 @@
             <button id="modal-close-btn" class="close-button">Close</button>
         </div>
     </div>
+    <div id="end-modal-backdrop" class="hidden">
+        <div id="end-modal-container">
+            <button id="close-end-modal-btn" class="icon-close-btn">&times;</button>
+            
+            <div class="end-content">
+                <h2 id="end-title" class="end-title"></h2>
+                
+                <div id="end-grid-summary" class="summary-grid">
+                    </div>
 
+                <div class="end-footer">
+                    <div class="timer-container">
+                        <p class="timer-label">NEXT PUZZLE IN</p>
+                        <p id="countdown-timer" class="timer-value">--:--:--</p>
+                    </div>
+                    <div class="share-container">
+                        <button id="share-btn" class="share-button">
+                            SHARE <span class="share-icon">➤</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="back-to-puzzle-btn" class="back-link">Back to Puzzle</button>
+            </div>
+        </div>
+    </div>
+    
     {% csrf_token %}
     <script>
         const BOOK_SEARCH_URL = "/api/book-search/"; 

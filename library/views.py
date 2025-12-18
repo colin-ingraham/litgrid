@@ -8,11 +8,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings 
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from .models import Book, Author, Subject 
+from .models import Book, Author, Subject
+from game import views
 
 GOOGLE_BOOKS_API_KEY = getattr(settings, 'GOOGLE_BOOKS_API_KEY', '')
 GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes"
-OPENLIBRARY_URL = "https://openlibrary.org/search.json" # New URL for Open Library
+OPENLIBRARY_URL = "https://openlibrary.org/search.json" 
 MAX_RETRIES = 3 
 
 # --- Utility Functions ---
@@ -24,53 +25,98 @@ def get_or_create_author(name):
 def get_or_create_subjects(subject_list):
     subject_objects = []
     for subject_name in subject_list:
-        subject, created = Subject.objects.get_or_create(
-            name__iexact=subject_name,
-            defaults={'name': subject_name}
-        )
-        subject_objects.append(subject)
+        # Basic cleaning: Title case the subject to avoid "war" vs "War" duplicates
+        clean_name = subject_name.strip().title()
+        if len(clean_name) > 0:
+            subject, created = Subject.objects.get_or_create(
+                name__iexact=clean_name,
+                defaults={'name': clean_name}
+            )
+            subject_objects.append(subject)
     return subject_objects
 
-def fetch_first_publish_year_from_ol(title):
+def fetch_ol_data(title, isbn=None):
     """
-    Fetches the first publish year from the OpenLibrary API using the book's title.
-    Returns the year (int) or None if not found or on error.
+    Fetches publish year and subjects.
+    Strategy:
+    1. Search by ISBN.
+    2. If ISBN fails (0 results), Search by Title.
+    3. If search result has no subjects, fetch Work API.
     """
     headers = {
-        # Required User-Agent for ethical API usage
         'User-Agent': 'Litgrid/1.0 (https://github.com/colin-ingraham/litgrid; contact@example.com)'
     }
-    params = {
-        'q': title,
-        'limit': 1 # Only need the top result
-    }
     
-    try:
-        response = requests.get(OPENLIBRARY_URL, params=params, headers=headers, timeout=5)
-        response.raise_for_status()
-        data = response.json()
+    result = {'year': None, 'subjects': []}
+    doc = None
+
+    # --- Step 1: Try Search by ISBN ---
+    if isbn:
+        try:
+            params = {'limit': 1, 'fields': 'key,title,author_name,first_publish_year,subject', 'isbn': isbn}
+            resp = requests.get(OPENLIBRARY_URL, params=params, headers=headers, timeout=5)
+            data = resp.json()
+            docs = data.get('docs', [])
+            
+            if docs:
+                doc = docs[0]
+        except Exception:
+            pass # Fail silently and fall back to title
+
+    # --- Step 2: Fallback to Title Search (if ISBN failed or wasn't provided) ---
+    if not doc:
+        try:
+            params = {'limit': 1, 'fields': 'key,title,author_name,first_publish_year,subject', 'q': title}
+            resp = requests.get(OPENLIBRARY_URL, params=params, headers=headers, timeout=5)
+            data = resp.json()
+            docs = data.get('docs', [])
+            
+            if docs:
+                doc = docs[0]
+        except Exception:
+            pass
+
+    # --- Step 3: Process the Document (if found) ---
+    if doc:
+        # Get Year
+        year = doc.get('first_publish_year')
+        if year and isinstance(year, int):
+            result['year'] = year
         
-        documents = data.get('docs', [])
-        if documents:
-            # Open Library's 'first_publish_year' is exactly what we need
-            year = documents[0].get('first_publish_year')
-            if year and isinstance(year, int):
-                return year
-    except requests.exceptions.RequestException as e:
-        print(f"OpenLibrary API Error for '{title}': {e}")
-    except Exception as e:
-        print(f"Error processing OpenLibrary data for '{title}': {e}")
+        # Get Subjects
+        result['subjects'] = doc.get('subject', [])
         
-    return None
+        # --- Step 4: Check for Missing Subjects (Work API Fallback) ---
+        if not result['subjects'] and 'key' in doc:
+            work_key = doc['key']
+            
+            try:
+                work_url = f"https://openlibrary.org{work_key}.json"
+                work_resp = requests.get(work_url, headers=headers, timeout=5)
+                
+                if work_resp.status_code == 200:
+                    work_data = work_resp.json()
+                    raw_subjects = work_data.get('subjects', [])
+                    
+                    clean_subjects = []
+                    for s in raw_subjects:
+                        if isinstance(s, str):
+                            clean_subjects.append(s)
+                        elif isinstance(s, dict) and 'name' in s:
+                            clean_subjects.append(s['name'])
+                    
+                    result['subjects'] = clean_subjects[:10]
+            except Exception:
+                pass
+
+    return result
 
 
 def format_book_data(volume_info, volume_id):
     """Extracts data from Google Books API response."""
-    # ... (Keep existing logic for authors, cover, subjects, etc.) ...
     authors_list = volume_info.get('authors', [])
     author_name = authors_list[0] if authors_list else 'Unknown Author'
     
-    # NOTE: We keep the Google publish_year here as a fallback, but the OL year will overwrite it later.
     published_date = volume_info.get('publishedDate', '')
     publish_year = None
     if published_date and len(published_date) >= 4:
@@ -99,11 +145,11 @@ def format_book_data(volume_info, volume_id):
         'google_book_id': volume_id,
         'title': volume_info.get('title', 'Unknown Title'),
         'author_name': author_name,
-        'publish_year': publish_year, # Google's (potentially inaccurate) year
+        'publish_year': publish_year, 
         'page_count': volume_info.get('pageCount', 0),
         'thumbnail_url': cover_url,
         'isbn': isbn,
-        'subjects': subjects,
+        'subjects': subjects, # This is just Google's list for now
     }
 
 def format_for_frontend(book_obj, source='local'):
@@ -123,7 +169,6 @@ def format_for_frontend(book_obj, source='local'):
         }
 
 # --- SEARCH VIEW (Unchanged) ---
-
 @require_GET
 def book_search(request):
     query = request.GET.get('q', '').strip()
@@ -162,7 +207,7 @@ def book_search(request):
     if not data or 'items' not in data:
         return JsonResponse([], safe=False)
 
-    # 3. Process API Results (De-duplication only, NO SAVING)
+    # 3. Process API Results
     seen_titles = set()
     api_results_formatted = []
     
@@ -183,19 +228,17 @@ def book_search(request):
     def rank_book(book_dict):
         title = book_dict['title'].lower().strip()
         q = query.lower().strip()
-        
-        if title == q:
-            return 0
-        if title.startswith(q):
-            return 1
+        if title == q: return 0
+        if title.startswith(q): return 1
         return 2
 
     api_results_formatted.sort(key=rank_book)
-    
     return JsonResponse(api_results_formatted[:10], safe=False)
 
 
-# --- VALIDATION & SAVING VIEW ---
+# --- VALIDATION & SAVING VIEW (Updated) ---
+
+# ... imports remain the same ...
 
 @require_POST
 def save_and_validate_guess(request):
@@ -207,13 +250,12 @@ def save_and_validate_guess(request):
     except (ValueError, json.JSONDecodeError):
         return JsonResponse({'error': 'Invalid data'}, status=400)
 
-    # --- STEP 1: Ensure Book is in Database (The "Save on Select" Logic) ---
+    # --- STEP 1: Ensure Book is in Database ---
     book = None
     try:
-        # Check 1: Check if book is already in cache by Google Book ID (fastest check)
         book = Book.objects.get(google_book_id=book_id)
     except Book.DoesNotExist:
-        # If not found by ID, we need to fetch the data from API
+        # Fetch from Google API
         api_url = f"{GOOGLE_BOOKS_URL}/{book_id}?key={GOOGLE_BOOKS_API_KEY}"
         
         try:
@@ -223,7 +265,7 @@ def save_and_validate_guess(request):
             
             book_info = format_book_data(vol_data['volumeInfo'], vol_data['id'])
             
-            # FIX: Check 2: Check for existing book by Title and Author
+            # Check if we already have this book via Title/Author (Soft match)
             existing_book = Book.objects.filter(
                 title__iexact=book_info['title'],
                 author__name__iexact=book_info['author_name']
@@ -231,77 +273,52 @@ def save_and_validate_guess(request):
 
             if existing_book:
                 book = existing_book
-                print(f"Found existing book '{book.title}' by Title/Author. Using existing record.")
             else:
-                # --- CRITICAL FIX: OVERWRITE publish_year with OpenLibrary data ---
-                ol_year = fetch_first_publish_year_from_ol(book_info['title'])
-                if ol_year:
-                    print(f"Found accurate publish year {ol_year} from OpenLibrary for '{book_info['title']}'.")
-                    book_info['publish_year'] = ol_year # Use OL year instead of Google's year
+                # --- FETCH EXTRA DATA FROM OPENLIBRARY ---
+                ol_data = fetch_ol_data(book_info['title'], isbn=book_info['isbn'])
+                
+                # Update Year if found
+                if ol_data['year']:
+                    book_info['publish_year'] = ol_data['year']
+                
+                # MERGE SUBJECTS
+                combined_subjects = list(set(book_info['subjects'] + ol_data['subjects']))
 
-                # Proceed with saving the new, unique book
+                # Proceed with saving
                 with transaction.atomic():
                     author_obj = get_or_create_author(book_info['author_name'])
-                    book = Book.objects.create(
+                    
+                    # FIX: Use update_or_create to prevent IntegrityError crashes
+                    book, created = Book.objects.update_or_create(
                         google_book_id=book_info['google_book_id'],
-                        title=book_info['title'],
-                        author=author_obj,
-                        publish_year=book_info['publish_year'], # This is now the OL year (if found)
-                        page_count=book_info['page_count'],
-                        thumbnail_url=book_info['thumbnail_url'],
-                        isbn=book_info['isbn'],
+                        defaults={
+                            'title': book_info['title'],
+                            'author': author_obj,
+                            'publish_year': book_info['publish_year'],
+                            'page_count': book_info['page_count'],
+                            'thumbnail_url': book_info['thumbnail_url'],
+                            'isbn': book_info['isbn'],
+                        }
                     )
-                    subject_objects = get_or_create_subjects(book_info['subjects'])
+                    
+                    # Update subjects
+                    subject_objects = get_or_create_subjects(combined_subjects)
                     book.subjects.set(subject_objects)
-                print(f"New book {book_id} saved successfully with OL year.")
+                
+                print(f"Book '{book_info['title']}' saved/updated successfully.")
                 
         except Exception as e:
+            # FIX: Use book_id in error message since 'book' might be None
             print(f"Error saving book {book_id}: {e}")
+            import traceback
+            traceback.print_exc() # Helps see the full error in console
             return JsonResponse({'is_correct': False, 'message': 'Could not verify and save book details.'})
 
-    # --- STEP 2: TEMPORARY Validation Logic ---
-    is_correct = True # Always True for now, as requested.
-    validate_cell(book)
+    # --- STEP 2: Validation Logic ---
+    is_correct = views.validate_cell(book, col, row)
     
     return JsonResponse({
         'is_correct': is_correct,
-        'message': 'Book selected and saved (Validation skipped).',
+        'message': 'Book selected and saved.',
         'book_title': book.title
     })
-
-# This view will validate that the book entered is correct for the given row & col the user guessed it in.
-# While we could hardcode the first subjects, I'd like to at least provide some modularity.
-# Each col/row will have a specific symbol to represent what it is asking
-# For example subject: historical fiction will be SHistorical or (subject)(seach_query)
-def validate_cell(book, col, row):
-    col_valid = False
-    row_valid = False
-
-    # Col Validation
-    if col[0] == "S": # Category Code: Subject
-        # For a subject code, we are going to simply look for the subject provided AFTER the S. If Book has subject, then valid.
-        cat_subject = col[1:]
-        for subject in book.subjects:
-            if subject in cat_subject:
-                col_valid = True
-    elif col[0] == "A": # Category Code: Author
-        pass
-    elif col[0] == "T": # Category Code: Time
-        pass
-
-    # Row Validation
-    if row[0] == "S": # Category Code: Subject
-        # For a subject code, we are going to simply look for the subject provided AFTER the S. If Book has subject, then valid.
-        cat_subject = row[1:]
-        for subject in book.subjects:
-            if subject in cat_subject:
-                row_valid = True
-    elif row[0] == "A": # Category Code: Author
-        pass
-    elif row[0] == "T": # Category Code: Time
-        pass
-    
-    if row_valid and col_valid:
-        return True
-    else:
-        return False

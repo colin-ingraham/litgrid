@@ -1,23 +1,41 @@
-1. Get a view in Game App that returns all the current categories for rows and cols. Have that get pulled into the HTML
-2. Fix the weird shape of the Game Board
-3. Finish the basic workings of validate_cell in order to get Test Board 1 workings
-4. Send over CategoryCodes instead of the entire Category String
-5. Test and try to implement for this given test board.
+
+
+ADDITIONS TO GET FROM ALPHA -> BETA
+
+
+2. MORE CATEGORIES - Figure out whether I should custom create Grids or just specific categories and then randomly shuffle through them. Then work on logic for more categories
+
+
+
+
+BETA ADDITIONS:
+1. PLAYER STATS
+2. TOP ANSWERS PER CELL - Users can click on Top Answers for each cell and see what most users guessed as their answer for that specific cell. 
+    Also shows user the percentage of users that guessed their same book. If they are only one to guess a book, then they get a little message "You were unique!" 
+3. USER ACCOUNTS - User can sign in, view their past stats
+4. ARCHIVES - User can see archives of previous games
+5. MOBILE POLISH - Make sure game is even better on mobile than computer
+6. ADMIN/CONTENT DASHBOARD - Way to view everything. Some way for me to see user counts, but then more importantly update Categories or something. Not sure yet but def need it. Way to plan out future Litgrids.
+    Also where I can go over User Reports
+7. SHARE LOGIC - Grid of emojis to publish prob. 
+8. REPORT THIS BOOK - Users can hit the button and explain a bug they discovered. Feedback button, perhaps
 
 
 
 
 
-
-Test Board 1:
-Col 1 : Author with abbreivation in name (i.e. A. Lincoln)
-Col 2 : Books from the 19th Century
-Col 3 : Books under 200 pages
-
-Row 1 : Books with the subject 'War'
-Row 2 : Historical Fiction
-Row 3 : Literary Fiction
+FEATURES:
+- Have a percentage score for each book that shows the user what percent of users '
+guessed that same guess
+    - This means we need to store each user guess
 
 
-Here are current steps for ME to code:
-2. Get Test Board 1 to be properly functioning in the Litgrid game. Make it work the way it is supposed to.]
+
+Alright, so here are a list of features that when I was playing this early alpha I noticed as problems
+- Users can repeat guesses (if they apply. Make sure all books are unique)
+
+- End Screen listed below
+- Need to store user guesses for comparison later on
+- Need to have a more dynamic way of getting a Litgrid board (maybe pull from file somehow?)
+- MORE CATEGORIES
+
