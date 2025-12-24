@@ -169,12 +169,68 @@ def validate_cell_to_category(c, book):
                 return True
             
     elif c[0] == "N": # Category Code: Name/Title
-        # w relates to word count in title
-        # s relates to start word, followed by start word
-        # c related to contains, followed by category
+        title = book.title.lower()
+
+        if c[1] == "w": # Word count Logic
+            words = title.split()
+            count = len(words)
+            
+            target = c[2]
+            if c[3] == "+": # Word count is x or greater
+                if count >= target: 
+                    return True
+            else:
+                if count == target: 
+                    return True
+
+        if c[1] == "c": # Contains x in title
+
+            cat_type = c[2:]
+            keywords = set()
+
+            # For "Contains" checks, we need clean words to avoid partial matches 
+            # (e.g. preventing "Scared" from matching "Red")
+            import string
+            translator = str.maketrans('', '', string.punctuation)
+            # This creates a set of all individual words in the title, stripped of punctuation
+            title_words = set(title.translate(translator).split())
+
+            if cat_type == "num": # Ncnum
+                # Check for actual digits first (e.g. "1984")
+                if any(char.isdigit() for char in title):
+                    return True
+                # Number words
+                keywords = {
+                    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", 
+                    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", 
+                    "eighteen", "nineteen", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", 
+                    "eighty", "ninety", "hundred", "thousand", "million", "billion"
+                }
+            elif cat_type == "col": # Nccol
+                keywords = {
+                    "red", "blue", "green", "yellow", "gold", "silver", "black", "white", 
+                    "orange", "purple", "brown", "pink", "gray", "grey", "violet", "indigo", 
+                    "scarlet", "crimson", "emerald", "ruby", "sapphire"
+                }
+
+            elif cat_type == "fam": # Ncfam
+                keywords = {
+                    "mother", "father", "sister", "brother", "daughter", "son", "aunt", "uncle", 
+                    "wife", "husband", "mom", "dad", "parent", "child", "grandmother", "grandfather", 
+                    "grandma", "grandpa", "niece", "nephew", "cousin", "stepmother", "stepfather"
+                }
+
+            elif cat_type == "sea": # Ncsea
+                keywords = {"spring", "summer", "autumn", "fall", "winter"}
+
+            # Efficiently check if ANY keyword exists in the title's word set
+            # !isdisjoint returns True if there is at least one common element
+            if not keywords.isdisjoint(title_words):
+                return True
+
         if c[1] == "s": # Start Word is x
             start_word = c[2:]
-            if book.title.lower().startswith(start_word):
+            if title.startswith(start_word):
                 return True
 
 
