@@ -3,7 +3,39 @@ from django.http import JsonResponse
 from django.views import View
 from library.models import Book
 from . import validation
+import calendar
 
+"""
+The Litgrid Category Validation uses a special code system to track the subjects in an efficient manner.
+
+Below is the documentation to decrypt these codes.
+
+Subject Codes (S):
+SGenre
+
+Time Codes (T):
+Tc - Time period: century
+Td - Time period: decade
+TpXXXXYYYY - Time period: 19391945
+Tm___ - Time Miscellanious (leap)
+
+Length Codes (L):
+Lu - Length Under
+Lo - Length Over
+
+Name/Title Codes (N):
+Nw1 - Name, word, 1 (length)
+Nw7+ - Name, word, 7 (length), + (or more)
+Ns___ - Name, starts (with), word
+Nc___ - Name, contains, category
+
+Author Codes (A):
+A___ - Category first 3 letters
+AN__ - Author, has first Name, name (John, Mary, etc)
+
+
+
+"""
 class DailyGame(View):
     def get(self, request):
         
@@ -97,11 +129,33 @@ def validate_cell_to_category(c, book):
             
 
     elif c[0] == "T": # Category Code: Time
+
         if c[1] == "c": # Time Period: Century
             century = c[2:]
             century = int(century) - 1
             if str(book.publish_year)[:2] == str(century):
                 return True
+            
+        elif c[1] == "d": # Time Period: Decade
+            century = c[2]
+            if int(century) > 2:
+                century = "1" + century
+            else:
+                century = century + "0"
+            decade = century + c[3]
+            if str(book.publish_year)[:3] == str(decade):
+                return True
+        
+        elif c[1] == "p": 
+            year1 = c[2:6]
+            year2 = c[6:]
+            if book.publish_year >= int(year1) and book.publish_year <= int(year2):
+                return True
+            
+        elif c[1] == "m":
+            if c[2:] == "leap":
+                if calendar.isleap(book.publish_year):
+                    return True
 
 
     elif c[0] == "L": # Category Code: Length
@@ -113,4 +167,16 @@ def validate_cell_to_category(c, book):
             min_length = c[2:]
             if book.page_count > min_length:
                 return True
+            
+    elif c[0] == "N": # Category Code: Name/Title
+        # w relates to word count in title
+        # s relates to start word, followed by start word
+        # c related to contains, followed by category
+        if c[1] == "s": # Start Word is x
+            start_word = c[2:]
+            if book.title.lower().startswith(start_word):
+                return True
+
+
     return False
+

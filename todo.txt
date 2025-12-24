@@ -3,9 +3,68 @@
 ADDITIONS TO GET FROM ALPHA -> BETA
 
 
+
+1. Now make it so that it chooses random categories from the category models. Needs certain logic to implement properly
+2. Each day gets a new puzzle
+3. Add the logic for every subject Code
+
+
+SUBJECT CODES TO ADD:
+S-Genre
+Tc - Time period: century
+Td - Time period: decade
+TpXXXXYYYY - Time period: 19391945
+Tm___ - Time Miscellanious (leap)
+Lu - Length Under
+Lo - Length Over
+
 2. MORE CATEGORIES - Figure out whether I should custom create Grids or just specific categories and then randomly shuffle through them. Then work on logic for more categories
 
 
+CATEGORY UPDATE:
+1. Add a category model with all the possible category options.
+    The JSON has three columns for each category
+    1. The Actual Category Display Name
+    2. The Subject Code used for backend
+    3. The Help Text that appears when you click on the category
+
+
+
+TITLE CATEGORIES: 
+
+- One Word Title
+- Title starts with "The"
+- Title Contains a number
+- Title contains a color
+- Title is a question
+- Title has 7+ words
+- Title contains family member (Father, Brother)
+- Title contains a season 
+
+AUTHOR CATEGORIES:
+- Alliterative Name
+- Author name with initials
+- One Name Authors
+- Common Surnames
+
+YEAR BASED:
+- Published in 20th century
+- Published this decade (2020s)
+- Published durin WW2
+- Published in 21st century
+- Published in a leap year
+
+PAGE COUNT:
+- >500 pages
+- <200 pages
+
+SUBJECTS:
+- Biography, Autobiography, Memoir
+- Thriller, Mystery, Detective, Crime
+- Science Fiction
+- Romance
+- Children's / Young Adult
+- Non-Fiction
 
 
 BETA ADDITIONS:
