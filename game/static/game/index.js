@@ -250,7 +250,7 @@ $(document).ready(function() {
         $cell.addClass('incorrect-guess').removeClass('correct-guess').removeClass('solved-correctly');
         
         setTimeout(() => {
-            $cell.empty().append('<span class="placeholder-text">Click to Guess</span>');
+            $cell.empty();
             $cell.removeClass('incorrect-guess');
         }, 2000); 
     }

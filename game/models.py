@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 
 class Category(models.Model):
     """
@@ -34,3 +35,32 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['display_name']
+
+
+class DailyPuzzle(models.Model):
+    """
+    Stores the specific grid configuration for a specific date.
+    """
+    date = models.DateField(unique=True)
+    
+    # Rows
+    row_1 = models.ForeignKey('Category', related_name='+', on_delete=models.CASCADE)
+    row_2 = models.ForeignKey('Category', related_name='+', on_delete=models.CASCADE)
+    row_3 = models.ForeignKey('Category', related_name='+', on_delete=models.CASCADE)
+    
+    # Columns
+    col_1 = models.ForeignKey('Category', related_name='+', on_delete=models.CASCADE)
+    col_2 = models.ForeignKey('Category', related_name='+', on_delete=models.CASCADE)
+    col_3 = models.ForeignKey('Category', related_name='+', on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Puzzle for {self.date}"
+
+    # Helper to return lists for the template
+    def get_rows(self):
+        return [self.row_1, self.row_2, self.row_3]
+        
+    def get_cols(self):
+        return [self.col_1, self.col_2, self.col_3]

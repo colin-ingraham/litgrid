@@ -4,7 +4,9 @@ from django.views import View
 from library.models import Book
 from . import validation
 import calendar
-
+from .utils import generate_puzzle_for_date
+from .models import DailyPuzzle
+from datetime import date
 """
 The Litgrid Category Validation uses a special code system to track the subjects in an efficient manner.
 
@@ -33,18 +35,16 @@ Author Codes (A):
 A___ - Category first 3 letters
 AN__ - Author, has first Name, name (John, Mary, etc)
 
-
-
 """
 class DailyGame(View):
     def get(self, request):
-        
-        row_categories, col_categories = get_cell_categories()
-        context = {
-            'row_categories': row_categories,
-            'col_categories': col_categories,
-        }
+        today = date.today()
 
+        daily_puzzle = DailyPuzzle.objects.get(date=today)
+        context = {
+            'row_categories': daily_puzzle.get_rows(),
+            'col_categories': daily_puzzle.get_cols(),
+        }
         return render(request, "game/daily.html", context)
 
 def BookSearchData(request):
@@ -66,31 +66,31 @@ def BookSearchData(request):
             }, status=404)
     return JsonResponse({"success": False, "error": "An error occurred."}, status=500)
 
+def get_daily_puzzle():
+    today = date.today()
+    daily_puzzle = DailyPuzzle.objects.get(date=today)
+    return daily_puzzle
+
 def get_cell_categories():
-    row_categories = [
-            "Fantasy",
-            "Historical Fiction",
-            "Literary Fiction",
-        ]
-        
-    col_categories = [
-            "Author with abbreviation in name (i.e. A.J. Watkins)",
-            "Books from the 19th Century",
-            "Books under 200 pages",
-        ]
-    return row_categories, col_categories
+    # This is the method that defines the Categories for a given day (and therefore a given Litgrid).
+    daily_puzzle = get_daily_puzzle()
+    return daily_puzzle.get_rows(), daily_puzzle.get_cols()
 
 def get_category_codes():
+    daily_puzzle = get_daily_puzzle()
+
+    rows = daily_puzzle.get_rows()
     row_codes = [
-            "SFantasy",
-            "SHistorical",
-            "SLiterary",
+            rows[0].logic_code,
+            rows[1].logic_code,
+            rows[2].logic_code,
         ]
-        
+    
+    cols = daily_puzzle.get_cols()
     col_codes = [
-            "Aabr",
-            "Tc19",
-            "Lu200",
+            cols[0].logic_code,
+            cols[1].logic_code,
+            cols[2].logic_code,
         ]
     return row_codes, col_codes
 
@@ -114,6 +114,8 @@ def validate_cell(book, col_idx, row_idx):
 
 def validate_cell_to_category(c, book):
     if c[0] == "S": # Category Code: Subject
+
+
         # For a subject code, we are going to simply look for the subject provided AFTER the S. If Book has subject, then valid.
         cat_subject = c[1:]
         for subject in book.subjects.all():
@@ -164,7 +166,7 @@ def validate_cell_to_category(c, book):
             if book.page_count < max_length:
                 return True
         elif c[1] == "o": # Length over x
-            min_length = c[2:]
+            min_length = int(c[2:])
             if book.page_count > min_length:
                 return True
             
@@ -176,11 +178,12 @@ def validate_cell_to_category(c, book):
             count = len(words)
             
             target = c[2]
-            if c[3] == "+": # Word count is x or greater
-                if count >= target: 
-                    return True
-            else:
-                if count == target: 
+            try:
+                if c[3] == "+": # Word count is x or greater
+                    if count >= int(target): 
+                        return True
+            except IndexError:
+                if count == int(target): 
                     return True
 
         if c[1] == "c": # Contains x in title

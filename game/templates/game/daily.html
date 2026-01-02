@@ -17,7 +17,6 @@
         <p class="header-subtitle">The Daily Literary Puzzle</p>
     </header>
 
-    <!-- Game Status Bar (Added for professional touch) -->
     <div class="status-wrapper">
         
         <div class="game-info-container">
@@ -71,16 +70,16 @@
             <!-- Grid Headers: Row 1 (Columns) -->
             <div class="grid-cell blank-cell"></div>
 
-            {% for category in col_categories %}
+            {% for col_category in col_categories %}
                 <div class="grid-cell col-header" data-col="1">
-                    <p class="header-text">{{ category }}</p>
+                    <p class="header-text">{{ col_category.display_name }}</p>
                 </div>
             {% endfor %}
             
             {% for row_category in row_categories %}
                 <!-- Row Header -->
                 <div class="grid-cell row-header">
-                    <p class="header-text">{{ row_category }}</p>
+                    <p class="header-text">{{ row_category.display_name }}</p>
                 </div>
                 
                 <!-- Input Cells (3 cells per row) -->
@@ -93,6 +92,7 @@
             {% endfor %}
 
         </main>
+        
         <button id="give-up-btn" class="action-button">Give Up</button>
         <div id="post-game-controls" class="post-game-container hidden">
             <button id="see-results-btn" class="action-button">See Results</button>
