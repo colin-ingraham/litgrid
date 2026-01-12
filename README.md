@@ -3,6 +3,7 @@ The Daily Literary Puzzle
 
 Litgrid is a browser-based trivia game for book lovers, inspired by the "Immaculate Grid" format. Players must fill a 3x3 grid by finding books that satisfy intersecting categories (e.g., Genre: Horror intersecting with Decade: 1990s).
 
+<img width="2276" height="1332" alt="image" src="https://github.com/user-attachments/assets/d2fdc650-b9cc-4d33-a875-2068d6629fc1" />
 
 
 📖 How It Works
