@@ -1,6 +1,80 @@
 from django.shortcuts import render
 import json
+import requests
 from datetime import date
+from django.conf import settings
+
+GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes"
+PLACEHOLDER_COVER = 'https://placehold.co/60x90/2D2D2D/C9A86A?text=N%2FA'
+
+
+def _fetch_cover_from_api(title, author):
+    """
+    Hits Google Books API for a single book cover.
+    Returns an https thumbnail URL, or '' on failure.
+    """
+    api_key = getattr(settings, 'GOOGLE_BOOKS_API_KEY', '')
+    params = {
+        'q': f'intitle:{title} inauthor:{author}',
+        'maxResults': 3,
+        'key': api_key,
+        'fields': 'items(volumeInfo(title,authors,imageLinks))',
+    }
+    try:
+        resp = requests.get(GOOGLE_BOOKS_URL, params=params, timeout=5)
+        resp.raise_for_status()
+        for item in resp.json().get('items', []):
+            links = item.get('volumeInfo', {}).get('imageLinks', {})
+            thumb = links.get('thumbnail') or links.get('smallThumbnail')
+            if thumb:
+                # Google Books still serves HTTP URLs — upgrade them
+                return thumb.replace('http://', 'https://')
+    except Exception:
+        pass
+    return ''
+
+
+def _enrich_books(groups):
+    """
+    Mutates each book dict in-place, adding a 'cover' key.
+
+    Priority:
+      1. Book.thumbnail_url from the local DB (fast, no API call)
+      2. Google Books API search (slow, only when DB misses)
+      3. Placeholder image
+    """
+    # Gracefully skip if the library app isn't installed / migrated yet
+    try:
+        from library.models import Book as LibraryBook
+    except Exception:
+        LibraryBook = None
+
+    for group in groups:
+        for book in group['books']:
+            cover = ''
+
+            # --- 1. DB lookup ---
+            if LibraryBook is not None:
+                try:
+                    db_book = (
+                        LibraryBook.objects
+                        .filter(title__iexact=book['title'])
+                        .select_related('author')
+                        .first()
+                    )
+                    if db_book and db_book.thumbnail_url:
+                        cover = db_book.thumbnail_url.replace('http://', 'https://')
+                except Exception:
+                    pass
+
+            # --- 2. API fallback ---
+            if not cover:
+                cover = _fetch_cover_from_api(book['title'], book['author'])
+
+            # --- 3. Placeholder ---
+            book['cover'] = cover or PLACEHOLDER_COVER
+
+    return groups
 
 
 def ConnectionsGame(request):
@@ -48,6 +122,8 @@ def ConnectionsGame(request):
             },
         ]
     }
+
+    _enrich_books(sample_puzzle['groups'])
 
     context = {
         'puzzle_data_json': json.dumps(sample_puzzle),

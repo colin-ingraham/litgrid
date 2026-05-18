@@ -5,7 +5,7 @@ const DIFF_COLORS = ['#e8c84a', '#6aaa64', '#4a90d9', '#9b59b6'];
 const DIFF_EMOJIS = ['🟡', '🟢', '🔵', '🟣'];
 
 // --- Game state ---
-let tiles = [];            // [{id, title, author, groupIndex}, ...]
+let tiles = [];            // [{id, title, author, cover, groupIndex}, ...]
 let selected = new Set();  // Set of tile IDs currently selected
 let solvedGroups = new Set();       // groupIndex values solved by any means
 let playerSolvedGroups = new Set(); // groupIndex values the player guessed correctly
@@ -31,6 +31,7 @@ function buildTiles() {
                 id: `${gIdx}_${bIdx}`,
                 title: book.title,
                 author: book.author,
+                cover: book.cover || '',
                 groupIndex: gIdx,
             });
         });
@@ -57,10 +58,21 @@ function renderGrid() {
             el.className = 'connection-tile';
             if (selected.has(tile.id)) el.classList.add('selected');
             el.dataset.id = tile.id;
+
             el.innerHTML = `
-                <span class="tile-title">${tile.title}</span>
-                <span class="tile-author">${tile.author}</span>
+                <div class="tile-inner">
+                    <img
+                        class="tile-cover"
+                        src="${tile.cover}"
+                        alt="${tile.title}"
+                        onerror="this.classList.add('cover-error')"
+                        draggable="false"
+                    />
+                    <span class="tile-title">${tile.title}</span>
+                    <span class="tile-author">${tile.author}</span>
+                </div>
             `;
+
             el.addEventListener('click', () => onTileClick(tile.id));
             grid.appendChild(el);
         });
@@ -121,7 +133,6 @@ function bindControls() {
 
 function onShuffle() {
     if (isGameOver) return;
-    // Shuffle only the unsolved portion, keep solved tiles out of the render anyway
     const unsolved = tiles.filter(t => !solvedGroups.has(t.groupIndex));
     shuffleArray(unsolved);
     let ui = 0;
@@ -201,7 +212,6 @@ function gameOver(won) {
     isGameOver = true;
 
     if (!won) {
-        // Reveal any unsolved groups
         PUZZLE_DATA.groups.forEach((_, idx) => {
             if (!solvedGroups.has(idx)) {
                 solvedGroups.add(idx);
