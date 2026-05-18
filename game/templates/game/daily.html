@@ -31,8 +31,21 @@
         </div>
 
         <div class="side-icons">
+            <button id="archive-trigger-btn" class="help-icon-btn" aria-label="Archives">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </button>
+            
             <button id="help-trigger-btn" class="help-icon-btn" aria-label="How to play">?</button>
-            </div>
+
+            <button id="give-up-btn" class="help-icon-btn give-up-icon-btn" aria-label="Give Up">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                    <line x1="4" y1="22" x2="4" y2="15"></line>
+                </svg>
+            </button>
+        </div>
 
     </div>
 
@@ -64,7 +77,18 @@
             </div>
         </div>
     </div>
-
+    <div id="archive-modal-backdrop" class="hidden">
+        <div id="archive-modal-container">
+            <div class="archive-header">
+                <h2 class="archive-title">Puzzle Archives</h2>
+                <button id="close-archive-btn" class="icon-close-btn">&times;</button>
+            </div>
+            
+            <div id="archive-list-container" class="archive-list">
+                <p style="text-align:center; color: var(--primary-beige);">Loading...</p>
+            </div>
+        </div>
+    </div>
     <div class="game-board-wrapper">
         <main class="container">
             <!-- Grid Headers: Row 1 (Columns) -->
@@ -93,7 +117,6 @@
 
         </main>
         
-        <button id="give-up-btn" class="action-button">Give Up</button>
         <div id="post-game-controls" class="post-game-container hidden">
             <button id="see-results-btn" class="action-button">See Results</button>
             <button id="archives-btn" class="action-button">Archives</button>
@@ -141,6 +164,7 @@
     
     {% csrf_token %}
     <script>
+        const CURRENT_PUZZLE_DATE = "{{ puzzle_date }}";
         const BOOK_SEARCH_URL = "/api/book-search/"; 
         const BOOK_VALIDATE_URL = "/api/validate-guess/";
     </script>

@@ -10,6 +10,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .models import Book, Author, Subject
 from game import views
+from datetime import datetime, date
 
 GOOGLE_BOOKS_API_KEY = getattr(settings, 'GOOGLE_BOOKS_API_KEY', '')
 GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes"
@@ -238,8 +239,6 @@ def book_search(request):
 
 # --- VALIDATION & SAVING VIEW (Updated) ---
 
-# ... imports remain the same ...
-
 @require_POST
 def save_and_validate_guess(request):
     try:
@@ -247,10 +246,22 @@ def save_and_validate_guess(request):
         book_id = data.get('book_id')
         row = int(data.get('row'))
         col = int(data.get('col'))
+        
+        # --- NEW: Extract and Parse Date ---
+        date_str = data.get('puzzle_date')
+        if date_str:
+            try:
+                target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                target_date = date.today() # Fallback
+        else:
+            target_date = date.today()
+        # -----------------------------------
+
     except (ValueError, json.JSONDecodeError):
         return JsonResponse({'error': 'Invalid data'}, status=400)
 
-    # --- STEP 1: Ensure Book is in Database ---
+    # --- STEP 1: Ensure Book is in Database (Unchanged) ---
     book = None
     try:
         book = Book.objects.get(google_book_id=book_id)
@@ -288,7 +299,6 @@ def save_and_validate_guess(request):
                 with transaction.atomic():
                     author_obj = get_or_create_author(book_info['author_name'])
                     
-                    # FIX: Use update_or_create to prevent IntegrityError crashes
                     book, created = Book.objects.update_or_create(
                         google_book_id=book_info['google_book_id'],
                         defaults={
@@ -308,14 +318,15 @@ def save_and_validate_guess(request):
                 print(f"Book '{book_info['title']}' saved/updated successfully.")
                 
         except Exception as e:
-            # FIX: Use book_id in error message since 'book' might be None
             print(f"Error saving book {book_id}: {e}")
             import traceback
-            traceback.print_exc() # Helps see the full error in console
+            traceback.print_exc() 
             return JsonResponse({'is_correct': False, 'message': 'Could not verify and save book details.'})
 
-    # --- STEP 2: Validation Logic ---
-    is_correct = views.validate_cell(book, col, row)
+    # --- STEP 2: Validation Logic (UPDATED) ---
+    # Now we pass the target_date to the validate_cell function in game/views.py
+    # NOTE: Ensure validate_cell in game/views.py accepts the target_date argument!
+    is_correct = views.validate_cell(book, col, row, target_date=target_date)
     
     return JsonResponse({
         'is_correct': is_correct,

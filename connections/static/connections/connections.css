@@ -1,0 +1,304 @@
+/* --- Connections page overrides --- */
+
+body.connections-page {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+/* Status box: horizontal layout with pips */
+.connections-status-box {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Mistake pips */
+.mistake-pips {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.mistake-pip {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--primary-gold);
+    transition: background-color 0.4s ease, transform 0.2s ease;
+}
+
+.mistake-pip.used {
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    transform: scale(0.85);
+}
+
+/* --- Main wrapper --- */
+.connections-wrapper {
+    width: 95%;
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 30px;
+}
+
+/* --- Solved groups area --- */
+#solved-groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.solved-group-row {
+    width: 100%;
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+    animation: groupReveal 0.35s ease;
+}
+
+@keyframes groupReveal {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.solved-group-category {
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #101010;
+    margin-bottom: 5px;
+}
+
+.solved-group-books {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgba(16, 16, 16, 0.72);
+}
+
+/* --- 4×4 tile grid --- */
+.connections-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+/* --- Individual tile --- */
+.connection-tile {
+    background-color: var(--primary-charcoal);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 90px;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.connection-tile:hover {
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 168, 106, 0.25);
+}
+
+.connection-tile.selected {
+    background-color: #3a3220;
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 14px rgba(201, 168, 106, 0.35);
+}
+
+/* Shake on wrong guess */
+.connection-tile.shake {
+    animation: tileShake 0.55s ease;
+}
+
+@keyframes tileShake {
+    0%,  100% { transform: translateX(0); }
+    15%        { transform: translateX(-8px); }
+    30%        { transform: translateX(8px); }
+    45%        { transform: translateX(-5px); }
+    60%        { transform: translateX(5px); }
+    75%        { transform: translateX(-2px); }
+    90%        { transform: translateX(2px); }
+}
+
+.tile-title {
+    font-size: clamp(0.62rem, 1.3vw, 0.84rem);
+    font-weight: 700;
+    color: var(--primary-beige);
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.tile-author {
+    font-size: clamp(0.55rem, 0.9vw, 0.7rem);
+    color: var(--primary-gold);
+    opacity: 0.8;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- Controls --- */
+.connections-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0 4px;
+}
+
+.ctrl-btn {
+    background-color: transparent;
+    color: var(--primary-beige);
+    border: 2px solid rgba(232, 220, 196, 0.5);
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.ctrl-btn:hover:not(:disabled) {
+    border-color: var(--primary-beige);
+    background-color: rgba(232, 220, 196, 0.08);
+    transform: translateY(-1px);
+}
+
+.ctrl-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Submit gets gold treatment */
+.submit-btn {
+    color: rgba(201, 168, 106, 0.45);
+    border-color: rgba(201, 168, 106, 0.35);
+}
+
+.submit-btn:not(:disabled) {
+    color: var(--primary-black);
+    border-color: var(--primary-gold);
+    background-color: var(--primary-gold);
+    box-shadow: 0 4px 14px rgba(201, 168, 106, 0.4);
+}
+
+.submit-btn:not(:disabled):hover {
+    background-color: #e0bb72;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(201, 168, 106, 0.5);
+}
+
+/* --- Toast notification --- */
+.toast {
+    position: fixed;
+    top: 44%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--primary-beige);
+    color: var(--primary-black);
+    padding: 11px 28px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 1rem;
+    z-index: 5000;
+    pointer-events: none;
+    animation: toastAnim 1.7s ease forwards;
+}
+
+@keyframes toastAnim {
+    0%   { opacity: 0; transform: translate(-50%, -60%); }
+    12%  { opacity: 1; transform: translate(-50%, -50%); }
+    78%  { opacity: 1; transform: translate(-50%, -50%); }
+    100% { opacity: 0; transform: translate(-50%, -44%); }
+}
+
+/* --- End modal: group summary --- */
+.end-group-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.end-summary-row {
+    border-radius: 6px;
+    padding: 11px 16px;
+    text-align: center;
+}
+
+.end-summary-category {
+    font-weight: 800;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #101010;
+}
+
+.end-summary-row.not-solved {
+    opacity: 0.4;
+}
+
+/* Override start-game-btn to gold since action-button defaults red */
+#start-game-btn {
+    color: var(--primary-gold) !important;
+    border-color: var(--primary-gold) !important;
+    width: 100%;
+}
+
+#start-game-btn:hover {
+    background-color: var(--primary-gold) !important;
+    color: var(--primary-black) !important;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .connections-wrapper {
+        width: 100%;
+        padding: 0 6px 24px;
+    }
+
+    .connection-tile {
+        min-height: 72px;
+        padding: 8px 5px;
+    }
+
+    .connections-controls {
+        gap: 8px;
+    }
+
+    .ctrl-btn {
+        padding: 9px 14px;
+        font-size: 0.75rem;
+    }
+
+    .solved-group-category {
+        font-size: 0.85rem;
+    }
+
+    .solved-group-books {
+        font-size: 0.72rem;
+    }
+}

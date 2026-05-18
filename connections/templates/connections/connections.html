@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Litgrid: Connections</title>
+    <meta name="description" content="Group 16 books into 4 categories. A daily literary connections puzzle.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'style.css' %}" rel="stylesheet" />
+    <link href="{% static 'connections/connections.css' %}" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="connections-page">
+
+    <header class="game-header">
+        <h1 class="header-title">Litgrid</h1>
+        <p class="header-subtitle">Connections — {{ display_date }}</p>
+    </header>
+
+    <div class="status-wrapper">
+        <div class="game-info-container connections-status-box">
+            <span class="stat-label">Mistakes Remaining</span>
+            <div class="mistake-pips">
+                <div class="mistake-pip"></div>
+                <div class="mistake-pip"></div>
+                <div class="mistake-pip"></div>
+                <div class="mistake-pip"></div>
+            </div>
+        </div>
+        <div class="side-icons">
+            <button id="help-trigger-btn" class="help-icon-btn" aria-label="How to play">?</button>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal-backdrop" class="hidden">
+        <div id="help-modal-container">
+            <h2 class="help-title">How To Play</h2>
+            <div class="help-content">
+                <div class="help-step">
+                    <span class="step-number">1</span>
+                    <p><strong>Find the Groups:</strong> 16 books are hiding in 4 secret categories of 4 each.</p>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">2</span>
+                    <p><strong>Select 4 Books:</strong> Tap books to select them, then hit <strong>Submit</strong> to guess a group.</p>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">3</span>
+                    <p><strong>Watch Your Mistakes:</strong> You only get <strong>4 mistakes</strong>. Each wrong guess costs one!</p>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">4</span>
+                    <p><strong>Difficulty Levels:</strong> <span style="color:#e8c84a">■</span> Easy → <span style="color:#9b59b6">■</span> Expert. Trickier groups are darker.</p>
+                </div>
+            </div>
+            <div class="help-footer">
+                <button id="start-game-btn" class="action-button" style="color:var(--primary-gold); border-color:var(--primary-gold); width:100%;">Let's Play!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main game area -->
+    <div class="connections-wrapper">
+
+        <!-- Solved groups stack up here -->
+        <div id="solved-groups-container"></div>
+
+        <!-- 4×4 tile grid — populated by JS -->
+        <div id="connections-grid" class="connections-grid"></div>
+
+        <!-- Controls -->
+        <div class="connections-controls">
+            <button id="shuffle-btn" class="ctrl-btn">Shuffle</button>
+            <button id="deselect-btn" class="ctrl-btn" disabled>Deselect All</button>
+            <button id="submit-btn" class="ctrl-btn submit-btn" disabled>Submit</button>
+        </div>
+
+    </div>
+
+    <!-- End Modal -->
+    <div id="end-modal-backdrop" class="hidden">
+        <div id="end-modal-container">
+            <button id="close-end-modal-btn" class="icon-close-btn">&times;</button>
+            <div class="end-content">
+                <h2 id="end-title" class="end-title"></h2>
+                <div id="end-group-summary" class="end-group-summary"></div>
+                <div class="end-footer">
+                    <div class="timer-container">
+                        <p class="timer-label">NEXT PUZZLE IN</p>
+                        <p id="countdown-timer" class="timer-value">--:--:--</p>
+                    </div>
+                    <div class="share-container">
+                        <button id="share-btn" class="share-button">
+                            SHARE <span class="share-icon">➤</span>
+                        </button>
+                    </div>
+                </div>
+                <button id="back-to-puzzle-btn" class="back-link">Back to Puzzle</button>
+            </div>
+        </div>
+    </div>
+
+    {% csrf_token %}
+    <script>
+        const PUZZLE_DATA = {{ puzzle_data_json|safe }};
+        const PUZZLE_DATE = "{{ puzzle_date }}";
+        const DISPLAY_DATE = "{{ display_date }}";
+    </script>
+    <script src="{% static 'connections/connections.js' %}"></script>
+</body>
+</html>

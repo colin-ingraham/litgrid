@@ -6,7 +6,9 @@ from . import validation
 import calendar
 from .utils import generate_puzzle_for_date
 from .models import DailyPuzzle
-from datetime import date
+from datetime import date, datetime
+import json
+from django.views.decorators.csrf import csrf_exempt
 """
 The Litgrid Category Validation uses a special code system to track the subjects in an efficient manner.
 
@@ -37,15 +39,40 @@ AN__ - Author, has first Name, name (John, Mary, etc)
 
 """
 class DailyGame(View):
-    def get(self, request):
-        today = date.today()
+    def get(self, request, date_str=None):
+        if date_str:
+            try:
+                # Parse the date from URL (format YYYY-MM-DD)
+                target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                # Fallback to today if URL is weird
+                target_date = date.today()
+        else:
+            target_date = date.today()
 
-        daily_puzzle = DailyPuzzle.objects.get(date=today)
+        daily_puzzle = DailyPuzzle.objects.get(date=target_date)
+        
         context = {
             'row_categories': daily_puzzle.get_rows(),
             'col_categories': daily_puzzle.get_cols(),
+            'puzzle_date': target_date.strftime("%Y-%m-%d"), # Pass date to template
+            'display_date': target_date.strftime("%B %d, %Y") # For UI display
         }
         return render(request, "game/daily.html", context)
+    
+def get_archive_list(request):
+    # Fetch all puzzles up to today, newest first
+    puzzles = DailyPuzzle.objects.filter(date__lte=date.today()).order_by('-date')
+    
+    data = []
+    for p in puzzles:
+        data.append({
+            "date_str": p.date.strftime("%Y-%m-%d"),
+            "display_date": p.date.strftime("%B %d, %Y"),
+            "is_today": p.date == date.today()
+        })
+    
+    return JsonResponse({"puzzles": data})
 
 def BookSearchData(request):
     if request.method == 'POST':
@@ -66,41 +93,35 @@ def BookSearchData(request):
             }, status=404)
     return JsonResponse({"success": False, "error": "An error occurred."}, status=500)
 
-def get_daily_puzzle():
-    today = date.today()
-    daily_puzzle = DailyPuzzle.objects.get(date=today)
-    return daily_puzzle
+def get_daily_puzzle(target_date=None):
+    if target_date is None:
+        target_date = date.today()
+    return DailyPuzzle.objects.get(date=target_date)
 
 def get_cell_categories():
     # This is the method that defines the Categories for a given day (and therefore a given Litgrid).
     daily_puzzle = get_daily_puzzle()
     return daily_puzzle.get_rows(), daily_puzzle.get_cols()
 
-def get_category_codes():
-    daily_puzzle = get_daily_puzzle()
+def get_category_codes(target_date=None):
+    daily_puzzle = get_daily_puzzle(target_date)
 
     rows = daily_puzzle.get_rows()
-    row_codes = [
-            rows[0].logic_code,
-            rows[1].logic_code,
-            rows[2].logic_code,
-        ]
+    row_codes = [r.logic_code for r in rows]
     
     cols = daily_puzzle.get_cols()
-    col_codes = [
-            cols[0].logic_code,
-            cols[1].logic_code,
-            cols[2].logic_code,
-        ]
+    col_codes = [c.logic_code for c in cols]
+    
     return row_codes, col_codes
 
 
 # This view will validate that the book entered is correct for the given row & col the user guessed it in.
 # Each col/row will have a specific symbol to represent what it is asking
 # For example subject: historical fiction will be SHistorical or (subject)(seach_query)
-def validate_cell(book, col_idx, row_idx):
-
-    row_codes, col_codes = get_category_codes()
+def validate_cell(book, col_idx, row_idx, target_date=None):
+    # Pass the specific date to get the correct categories
+    row_codes, col_codes = get_category_codes(target_date)
+    
     col = col_codes[col_idx - 1]
     row = row_codes[row_idx - 1]
 
@@ -124,10 +145,35 @@ def validate_cell_to_category(c, book):
 
             
     elif c[0] == "A": # Category Code: Author
-        author_cat = c[1:]
-        if author_cat == "abr":
-            if validation.checkAuthorAbbreviation(book.author.name):
+        author_name = book.author.name
+        if c[1] == "N": # Author with name
+            name = c[2:]
+            if name in author_name.lower():
                 return True
+        
+        author_cat = c[1:]
+        
+        if author_cat == "ini": # Author has initials
+            for index, letter in enumerate(author_name):
+                if letter.isupper():
+                    if index + 1 < len(author_name) and author_name[index + 1] == ".":
+                        return True
+
+        if author_cat == "all":
+        # Split name into parts (e.g. ["Marilyn", "Monroe"])
+            names = author_name.split()
+            # Need at least 2 names to compare
+            if len(names) >= 2:
+                # Compare first letter of First Name vs first letter of Last Name
+                if names[0][0].lower() == names[-1][0].lower():
+                    return True
+
+        if author_cat == "sin": # Author has a single name
+            # If splitting by space results in exactly 1 item
+            if len(author_name.split()) == 1:
+                return True
+        
+
             
 
     elif c[0] == "T": # Category Code: Time

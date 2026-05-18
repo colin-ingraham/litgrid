@@ -195,7 +195,7 @@ $(document).ready(function() {
                 url: BOOK_VALIDATE_URL,
                 type: 'POST',
                 headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
-                data: JSON.stringify({ book_id: bookId, row: row, col: col }),
+                data: JSON.stringify({ book_id: bookId, row: row, col: col, puzzle_date: CURRENT_PUZZLE_DATE }),
                 success: function(response) {
                     if (response.is_correct) {
                         markCellCorrect(activeCell, response.book_title || bookTitle, bookAuthor, bookCover);
@@ -275,6 +275,83 @@ $(document).ready(function() {
         saveGameState();
     });
 
+    // --- ARCHIVE LOGIC ---
+    const $archiveModal = $('#archive-modal-backdrop');
+    const $archiveBtn = $('#archive-trigger-btn');
+    const $closeArchiveBtn = $('#close-archive-btn');
+    const $archiveList = $('#archive-list-container');
+    $archiveBtn.on('click', function() {
+        $archiveModal.removeClass('hidden');
+        setTimeout(() => {
+            $archiveModal.addClass('visible');
+        }, 10);
+        loadArchives(); // Fetch the list from the server
+    });
+    $('#archive-list-container').on('click', '.archive-item', function(e) {
+        // 1. Check if game is "In Progress" (Started but not finished)
+        const hasStarted = guessesRemaining < 12 && booksSolved < 9;
+        
+        if (hasStarted && !isGameComplete) {
+            // 2. The Confirmation Window
+            const confirmSwitch = confirm("You have a game in progress! Switching puzzles will reset your current game. Are you sure?");
+            
+            if (!confirmSwitch) {
+                e.preventDefault(); // Stop the link from loading
+                return false;
+            }
+            // If they say Yes, we allow the link to proceed.
+            // The logic in 'loadGameState' below will handle the actual data wiping on the next page load.
+        }
+    });
+    // Toggle Modal
+    $('#archives-btn').on('click', function() {
+        // Close the End Screen modal
+        hideEndModal();
+        // Trigger the Archive modal to open
+        $('#archive-trigger-btn').trigger('click');
+    });
+
+    $closeArchiveBtn.on('click', function() {
+        $archiveModal.removeClass('visible');
+        setTimeout(() => $archiveModal.addClass('hidden'), 300);
+    });
+
+    // Close on backdrop click
+    $archiveModal.on('click', function(e) {
+        if (e.target.id === 'archive-modal-backdrop') {
+            $closeArchiveBtn.trigger('click');
+        }
+    });
+
+    // AJAX to fetch list
+    function loadArchives() {
+        // Only load if empty to save requests (optional optimization)
+        if ($archiveList.children().length > 1) return; 
+
+        $.ajax({
+            url: '/api/archive-list/', // Ensure this matches your urls.py
+            method: 'GET',
+            success: function(response) {
+                $archiveList.empty();
+                
+                response.puzzles.forEach(puzzle => {
+                    // Create URL based on whether it is today or past
+                    let url = puzzle.is_today ? '/' : `/puzzle/${puzzle.date_str}/`;
+                    
+                    let html = `
+                        <a href="${url}" class="archive-item">
+                            <span class="archive-date">${puzzle.display_date}</span>
+                            <span class="archive-status">${puzzle.is_today ? 'TODAY' : 'PLAY'}</span>
+                        </a>
+                    `;
+                    $archiveList.append(html);
+                });
+            },
+            error: function() {
+                $archiveList.html('<p style="text-align:center; color:var(--error-red);">Unable to load archives.</p>');
+            }
+        });
+    }
 
     // --- End Screen Logic ---
     const $endModal = $('#end-modal-backdrop');
@@ -359,13 +436,50 @@ $(document).ready(function() {
     $backToPuzzleBtn.on('click', hideEndModal);
     $closeEndBtn.on('click', hideEndModal);
     
-    // Optional: Share Button (Visual feedback only for MVP)
+    // --- Share Button Logic ---
     $('#share-btn').on('click', function() {
-        const originalText = $(this).text();
-        $(this).text("COPIED!");
-        setTimeout(() => {
-            $(this).html('SHARE <span class="share-icon">➤</span>');
-        }, 2000);
+        // 1. Build the Header (Title + Date + Score)
+        // e.g. "Litgrid 2023-10-25 (5/9)"
+        let shareText = `Litgrid ${CURRENT_PUZZLE_DATE}\n`; 
+        shareText += `Score: ${booksSolved}/${totalBooks}\n\n`;
+
+        // 2. Loop through the grid (Rows 1-3, Cols 1-3)
+        for (let r = 1; r <= 3; r++) {
+            let rowString = "";
+            for (let c = 1; c <= 3; c++) {
+                // Find the specific cell
+                const $cell = $(`.input-box[data-row="${r}"][data-col="${c}"]`);
+                
+                // Check if it was solved
+                if ($cell.hasClass('solved-correctly')) {
+                    rowString += "🟩"; // Green Square
+                } else {
+                    rowString += "⬛"; // Black/Grey Square (Standard for 'empty/wrong')
+                }
+            }
+            // Add new line after every row
+            shareText += rowString + "\n";
+        }
+
+        // 3. Add the Footer (URL)
+        shareText += `\nPlay here: ${window.location.origin}`;
+
+        // 4. Copy to Clipboard
+        navigator.clipboard.writeText(shareText).then(() => {
+            // Visual Feedback
+            const $btn = $(this);
+            const originalHtml = $btn.html();
+            
+            $btn.text("COPIED!");
+            $btn.css('background-color', '#27ae60'); // Force green
+            
+            setTimeout(() => {
+                $btn.html(originalHtml); // Restore icon and text
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            alert("Could not copy to clipboard. You can screenshot instead!");
+        });
     });
 
     const $postGameControls = $('#post-game-controls');
@@ -397,10 +511,6 @@ $(document).ready(function() {
         showEndScreen(isVictory);
     });
 
-    // "Archives" (Placeholder for now)
-    $archivesBtn.on('click', function() {
-        alert("The Archives are coming soon! Stay tuned.");
-    });
 
     // ==========================================
     // --- LOCAL STORAGE (SAVE/LOAD) LOGIC ---
@@ -409,7 +519,6 @@ $(document).ready(function() {
     function saveGameState() {
         const gridState = [];
 
-        // 1. Scrape the grid
         $('.input-box').each(function() {
             const $cell = $(this);
             const row = $cell.data('row');
@@ -419,7 +528,6 @@ $(document).ready(function() {
 
             if ($cell.hasClass('solved-correctly')) {
                 status = 'SOLVED';
-                // Grab data from the specific HTML structure we built
                 bookData = {
                     title: $cell.find('.final-book-title').text(),
                     author: $cell.find('.final-book-author').text(),
@@ -435,18 +543,16 @@ $(document).ready(function() {
             });
         });
 
-        // 2. Create the Save Object
         const gameState = {
-            date: new Date().toDateString(), // e.g., "Thu Dec 11 2025"
+            // UPDATED: Use the specific puzzle date, not just "today's calendar date"
+            date: CURRENT_PUZZLE_DATE, 
             guessesRemaining: guessesRemaining,
             booksSolved: booksSolved,
             isGameComplete: isGameComplete,
             grid: gridState
         };
 
-        // 3. Write to Local Storage
         localStorage.setItem('litgrid_save_data', JSON.stringify(gameState));
-        // console.log("Game Saved:", gameState); // Debug
     }
 
     function loadGameState() {
@@ -455,43 +561,34 @@ $(document).ready(function() {
 
         try {
             const save = JSON.parse(saveString);
-            const today = new Date().toDateString();
-
-            if (save.date !== today) {
-                console.log("Old save found. Clearing.");
-                localStorage.removeItem('litgrid_save_data');
-                return;
+            
+            // --- THE RESET LOGIC ---
+            // If the saved game is for a different date than the puzzle currently on screen...
+            if (save.date !== CURRENT_PUZZLE_DATE) {
+                console.log("Save file is for a different puzzle. Resetting.");
+                localStorage.removeItem('litgrid_save_data'); // Wipe old data
+                return; // Stop loading (game stays empty)
             }
 
             console.log("Loading Save Game...");
 
-            // 1. Restore Variables
             guessesRemaining = parseInt(save.guessesRemaining);
             booksSolved = parseInt(save.booksSolved);
-            isGameComplete = save.isGameComplete; // <--- LOAD THE FLAG
+            isGameComplete = save.isGameComplete;
 
-            // 2. Restore Grid Cells
             if (save.grid) {
                 save.grid.forEach(cellData => {
                     if (cellData.status === 'SOLVED') {
                         const $cell = $(`.input-box[data-row="${cellData.row}"][data-col="${cellData.col}"]`);
-                        // Pass false to avoid triggering saveGameState during load
                         markCellCorrect($cell, cellData.bookData.title, cellData.bookData.author, cellData.bookData.cover, false);
                     }
                 });
             }
 
-            // 3. FORCE UI STATE BASED ON FLAG
+            // Force UI State if game was finished
             if (isGameComplete) {
-                console.log("Game loaded in COMPLETED STATE.");
-                
-                // 1. Kill the Give Up Button
                 $('#give-up-btn').addClass('hidden'); 
-                
-                // 2. Show the Results Button
                 $('#post-game-controls').removeClass('hidden');
-                
-                // 3. Ensure input interactions are dead (optional extra safety)
                 $('.input-box').off('click');
             }
 
@@ -502,13 +599,6 @@ $(document).ready(function() {
         }
     }
 
-    $('body').append(`
-        <div style="position: fixed; bottom: 10px; right: 10px; z-index: 10000; opacity: 0.8;">
-            <button id="dev-reset-btn" style="background: red; color: white; border: 1px solid white; padding: 5px 10px; cursor: pointer; font-weight: bold;">
-                ⚠️ RESET GAME
-            </button>
-        </div>
-    `);
     $('#dev-reset-btn').on('click', function() {
         if(confirm("This will wipe your save and reload. Are you sure?")) {
             // Remove the ACTUAL key you are using in saveGameState()
