@@ -1,0 +1,125 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Create Connections{% endblock %}
+{% block nav_connections %}active{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'dashboard/create_connections.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Page header bar ── -->
+<div class="editor-topbar">
+    <a href="{% url 'dashboard:home' %}" class="topbar-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 5 5 12 12 19"/></svg>
+        Dashboard
+    </a>
+    <div class="topbar-center">
+        <h1 class="topbar-title">Connections Puzzle</h1>
+        <span class="topbar-date">{{ display_date }}</span>
+    </div>
+    <div class="topbar-actions">
+        <span id="save-status" class="save-status"></span>
+        <button id="save-btn" class="btn btn--gold" disabled>
+            Save Puzzle
+        </button>
+    </div>
+</div>
+
+{% if existing_puzzle %}
+<div class="editor-warning">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    A Connections puzzle for <strong>{{ display_date }}</strong> already exists. Saving will be blocked.
+</div>
+{% endif %}
+
+<!-- ── Puzzle editor ── -->
+<div class="puzzle-editor">
+
+    {% for level in difficulty_levels %}
+    <div class="group-panel" data-group="{{ level.order }}">
+
+        <!-- Color accent bar -->
+        <div class="group-accent-bar" style="background: {{ level.color }};"></div>
+
+        <div class="group-body">
+
+            <!-- Group header: difficulty badge + category input -->
+            <div class="group-header-row">
+                <span class="diff-badge" style="background: {{ level.color }}; color: {% if level.difficulty == 1 %}#1a1a1a{% else %}#fff{% endif %};">
+                    {{ level.name }}
+                </span>
+                <input
+                    type="text"
+                    class="category-input"
+                    data-group="{{ level.order }}"
+                    placeholder="Category name…"
+                    maxlength="100"
+                    autocomplete="off"
+                />
+                <span class="group-progress" id="progress-{{ level.order }}">0 / 4</span>
+            </div>
+
+            <!-- 4 book slots -->
+            <div class="book-slot-row">
+                <div class="book-slot" data-group="{{ level.order }}" data-slot="0"></div>
+                <div class="book-slot" data-group="{{ level.order }}" data-slot="1"></div>
+                <div class="book-slot" data-group="{{ level.order }}" data-slot="2"></div>
+                <div class="book-slot" data-group="{{ level.order }}" data-slot="3"></div>
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+
+</div><!-- /.puzzle-editor -->
+
+
+<!-- ── Search Modal ── -->
+<div id="search-backdrop" class="search-backdrop hidden">
+    <div id="search-modal" class="search-modal">
+
+        <div class="search-modal__header">
+            <div>
+                <h3 class="search-modal__title">Select a Book</h3>
+                <p class="search-modal__hint" id="search-hint">Group — Slot</p>
+            </div>
+            <button class="search-modal__close" id="search-close-btn" aria-label="Close">×</button>
+        </div>
+
+        <div class="search-input-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+                type="search"
+                id="search-input"
+                class="search-input"
+                placeholder="Search by title or author…"
+                autocomplete="off"
+                spellcheck="false"
+            />
+        </div>
+
+        <div id="search-results" class="search-results">
+            <p class="search-placeholder">Start typing to search books…</p>
+        </div>
+
+    </div>
+</div>
+
+
+{% csrf_token %}
+<script>
+    const PUZZLE_DATE      = "{{ puzzle_date }}";
+    const BOOK_SEARCH_URL  = "{{ book_search_url }}";
+    const SAVE_URL         = "{% url 'dashboard:save_puzzle' %}";
+    const CSRF_TOKEN       = document.querySelector('meta[name="csrf-token"]').content;
+    const DIFF_COLORS      = {{ difficulty_levels|safe }};
+</script>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'dashboard/create_connections.js' %}"></script>
+{% endblock %}
