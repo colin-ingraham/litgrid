@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 
 
 class ConnectionsPuzzle(models.Model):
-    date = models.DateField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
@@ -15,10 +14,14 @@ class ConnectionsPuzzle(models.Model):
     )
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-id']
 
     def __str__(self):
-        return f"Connections Puzzle — {self.date}"
+        return f"Connections Puzzle #{self.id}"
+
+    @property
+    def number(self):
+        return self.id
 
     def is_complete(self):
         groups = self.groups.prefetch_related('books')
@@ -33,13 +36,13 @@ class ConnectionsGroup(models.Model):
     puzzle     = models.ForeignKey(ConnectionsPuzzle, related_name='groups', on_delete=models.CASCADE)
     category   = models.CharField(max_length=200)
     difficulty = models.IntegerField(choices=DIFFICULTY_CHOICES)
-    order      = models.IntegerField()  # 0–3, locked during creation
+    order      = models.IntegerField()  # 0-3, locked during creation
 
     class Meta:
         ordering = ['order']
 
     def __str__(self):
-        return f"{self.puzzle.date} | G{self.order + 1}: {self.category}"
+        return f"Puzzle #{self.puzzle_id} | G{self.order + 1}: {self.category}"
 
     @property
     def color(self):
@@ -53,7 +56,7 @@ class ConnectionsGroup(models.Model):
 class ConnectionsBookEntry(models.Model):
     group = models.ForeignKey(ConnectionsGroup, related_name='books', on_delete=models.CASCADE)
     book  = models.ForeignKey('library.Book', on_delete=models.PROTECT)
-    slot  = models.IntegerField()  # 0–3
+    slot  = models.IntegerField()  # 0-3
 
     class Meta:
         ordering = ['slot']

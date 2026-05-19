@@ -61,8 +61,8 @@
     padding: 28px 24px 24px;
     border-bottom: 1px solid var(--dash-border);
     display: flex;
-    align-items: baseline;
-    gap: 8px;
+    align-items: center;
+    justify-content: center;
 }
 
 .brand-name {
@@ -322,7 +322,7 @@
 .puzzle-table__header,
 .puzzle-table__row {
     display: grid;
-    grid-template-columns: 1fr 110px 110px 80px;
+    grid-template-columns: 80px 110px 110px 100px 80px;
     padding: 12px 20px;
     gap: 16px;
     align-items: center;

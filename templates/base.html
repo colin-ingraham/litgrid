@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Litgrid{% endblock %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="{% static 'style.css' %}" rel="stylesheet">
+    <link href="{% static 'dashboard/dashboard.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="dashboard-body {% block body_class %}{% endblock %}">
+
+    <!-- ── Sidebar ── -->
+    <aside class="dash-sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-name">Litgrid</span>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <span class="nav-section-label">Games</span>
+            <a href="/" class="nav-link {% block nav_litgrid %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Litgrid
+            </a>
+            <a href="{% url 'connections' %}" class="nav-link {% block nav_connections_game %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><circle cx="15" cy="15" r="3"/><path d="M12 3c0 5-6 6-6 9"/><path d="M12 21c0-5 6-6 6-9"/></svg>
+                Connections
+            </a>
+
+            {% if request.user.is_staff %}
+            <span class="nav-section-label" style="margin-top: 18px;">Admin</span>
+            <a href="{% url 'dashboard:home' %}" class="nav-link {% block nav_home %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Dashboard
+            </a>
+            <a href="{% url 'dashboard:create_connections' %}" class="nav-link {% block nav_connections %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Connections
+            </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-footer">
+            {% if request.user.is_authenticated %}
+                <span class="sidebar-user">{{ request.user.username }}</span>
+                <a href="/admin/logout/" class="logout-link">Sign out</a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="dash-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

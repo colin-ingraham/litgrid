@@ -1,6 +1,5 @@
 import json
 import requests
-from datetime import date, datetime
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -20,7 +19,7 @@ from library.views import (
 from .models import ConnectionsPuzzle, ConnectionsGroup, ConnectionsBookEntry
 
 
-# ─── Constants ──────────────────────────────────────────────────────────────
+# --- Constants ---------------------------------------------------------------
 
 DIFFICULTY_LEVELS = [
     {'order': 0, 'difficulty': 1, 'name': 'Easy',   'color': '#e8c84a'},
@@ -30,20 +29,18 @@ DIFFICULTY_LEVELS = [
 ]
 
 
-# ─── Utility ─────────────────────────────────────────────────────────────────
+# --- Utility -----------------------------------------------------------------
 
 def _get_or_fetch_book(google_book_id):
     """
     Return a library.Book for the given google_book_id.
-    If the book isn't in the DB yet, fetch it from Google Books + OpenLibrary and save it.
-    Returns (book, error_string). One of the two will always be None.
+    Fetches from Google Books + OpenLibrary and saves if not already in the DB.
+    Returns (book, error_string). One will always be None.
     """
-    # 1. Already in DB?
     book = Book.objects.filter(google_book_id=google_book_id).first()
     if book:
         return book, None
 
-    # 2. Fetch full volume data from Google Books
     api_url = f"{GOOGLE_BOOKS_URL}/{google_book_id}?key={getattr(settings, 'GOOGLE_BOOKS_API_KEY', '')}"
     try:
         resp = requests.get(api_url, timeout=5)
@@ -53,7 +50,6 @@ def _get_or_fetch_book(google_book_id):
     except Exception as e:
         return None, f"Could not fetch book '{google_book_id}' from Google Books: {e}"
 
-    # 3. Soft-match by title + author to avoid duplicates
     existing = Book.objects.filter(
         title__iexact=book_info['title'],
         author__name__iexact=book_info['author_name'],
@@ -61,7 +57,6 @@ def _get_or_fetch_book(google_book_id):
     if existing:
         return existing, None
 
-    # 4. Enrich with OpenLibrary, then save atomically
     ol_data = fetch_ol_data(book_info['title'], isbn=book_info.get('isbn'))
     if ol_data['year']:
         book_info['publish_year'] = ol_data['year']
@@ -88,34 +83,22 @@ def _get_or_fetch_book(google_book_id):
     return book, None
 
 
-# ─── Views ───────────────────────────────────────────────────────────────────
+# --- Views -------------------------------------------------------------------
 
 @login_required
 def dashboard_home(request):
-    today        = date.today()
-    today_puzzle = ConnectionsPuzzle.objects.filter(date=today).first()
-    recent       = ConnectionsPuzzle.objects.select_related('created_by').order_by('-date')[:15]
-
+    puzzles = ConnectionsPuzzle.objects.select_related('created_by').order_by('-id')[:20]
     context = {
-        'today':         today,
-        'today_display': today.strftime('%B %d, %Y'),
-        'today_puzzle':  today_puzzle,
-        'recent_puzzles': recent,
+        'puzzles': puzzles,
     }
     return render(request, 'dashboard/home.html', context)
 
 
 @login_required
 def create_connections(request):
-    today    = date.today()
-    existing = ConnectionsPuzzle.objects.filter(date=today).first()
-
     context = {
-        'puzzle_date':      today.strftime('%Y-%m-%d'),
-        'display_date':     today.strftime('%B %d, %Y'),
-        'existing_puzzle':  existing,
         'difficulty_levels': DIFFICULTY_LEVELS,
-        'book_search_url':  '/api/book-search/',
+        'book_search_url':   '/api/book-search/',
     }
     return render(request, 'dashboard/create_connections.html', context)
 
@@ -128,13 +111,11 @@ def save_connections_puzzle(request):
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
 
-    date_str    = data.get('date', '')
     groups_data = data.get('groups', [])
 
-    # ── Structural validation ──
-    if not date_str or len(groups_data) != 4:
+    if len(groups_data) != 4:
         return JsonResponse(
-            {'success': False, 'error': 'Puzzle must have a date and exactly 4 groups.'},
+            {'success': False, 'error': 'Puzzle must have exactly 4 groups.'},
             status=400,
         )
 
@@ -151,24 +132,8 @@ def save_connections_puzzle(request):
                 status=400,
             )
 
-    # ── Date parsing ──
-    try:
-        puzzle_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-    except ValueError:
-        return JsonResponse({'success': False, 'error': 'Invalid date format.'}, status=400)
-
-    # ── Duplicate date guard ──
-    if ConnectionsPuzzle.objects.filter(date=puzzle_date).exists():
-        return JsonResponse(
-            {
-                'success': False,
-                'error': f'A Connections puzzle for {puzzle_date.strftime("%B %d, %Y")} already exists.',
-            },
-            status=409,
-        )
-
-    # ── Ensure all 16 books are in the DB before touching the transaction ──
-    resolved = []   # [[Book, Book, Book, Book], ...]
+    # Ensure all 16 books are in the DB before opening the transaction
+    resolved = []
     for group_data in groups_data:
         group_books = []
         for book_data in group_data['books']:
@@ -178,13 +143,9 @@ def save_connections_puzzle(request):
             group_books.append(book)
         resolved.append(group_books)
 
-    # ── Save everything atomically ──
     try:
         with transaction.atomic():
-            puzzle = ConnectionsPuzzle.objects.create(
-                date=puzzle_date,
-                created_by=request.user,
-            )
+            puzzle = ConnectionsPuzzle.objects.create(created_by=request.user)
             for order, (group_data, books) in enumerate(zip(groups_data, resolved)):
                 group = ConnectionsGroup.objects.create(
                     puzzle=puzzle,
@@ -197,4 +158,4 @@ def save_connections_puzzle(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-    return JsonResponse({'success': True, 'puzzle_id': puzzle.id})
+    return JsonResponse({'success': True, 'puzzle_id': puzzle.id, 'puzzle_number': puzzle.id})

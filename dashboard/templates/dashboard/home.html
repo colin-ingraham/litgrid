@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Dashboard{% endblock %}
@@ -8,63 +8,31 @@
 
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Litgrid Admin</p>
-        <h1 class="page-title">Dashboard</h1>
+        <h1 class="page-title">Admin Dashboard</h1>
     </div>
-    <span class="page-date">{{ today_display }}</span>
+    <a href="{% url 'dashboard:create_connections' %}" class="btn btn--gold">
+        + New Puzzle
+    </a>
 </div>
 
 <div class="dash-rule"></div>
 
-<!-- ── Today Status ── -->
-<section class="today-section">
-    <h2 class="section-heading">Today's Connections</h2>
-
-    {% if today_puzzle %}
-        <div class="status-card status-card--exists">
-            <div class="status-card__icon">✓</div>
-            <div class="status-card__body">
-                <p class="status-card__label">Puzzle created</p>
-                <p class="status-card__sub">{{ today_display }} — ready for players</p>
-            </div>
-            <div class="status-card__actions">
-                <a href="#" class="btn btn--ghost btn--sm">View</a>
-            </div>
-        </div>
-    {% else %}
-        <div class="status-card status-card--missing">
-            <div class="status-card__icon">!</div>
-            <div class="status-card__body">
-                <p class="status-card__label">No puzzle yet</p>
-                <p class="status-card__sub">{{ today_display }} — players are waiting</p>
-            </div>
-            <div class="status-card__actions">
-                <a href="{% url 'dashboard:create_connections' %}" class="btn btn--gold">
-                    Create Puzzle
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </a>
-            </div>
-        </div>
-    {% endif %}
-</section>
-
-<!-- ── Recent Puzzles ── -->
 <section class="recent-section">
-    <h2 class="section-heading">Recent Puzzles</h2>
+    <h2 class="section-heading">All Puzzles</h2>
 
-    {% if recent_puzzles %}
+    {% if puzzles %}
     <div class="puzzle-table">
         <div class="puzzle-table__header">
-            <span>Date</span>
+            <span>Puzzle</span>
             <span>Status</span>
             <span>Created by</span>
+            <span>Created</span>
             <span>Actions</span>
         </div>
-        {% for puzzle in recent_puzzles %}
-        <div class="puzzle-table__row {% if puzzle.date == today %}puzzle-table__row--today{% endif %}">
-            <span class="puzzle-date-cell">
-                {% if puzzle.date == today %}<span class="today-pill">Today</span>{% endif %}
-                {{ puzzle.date|date:"M d, Y" }}
+        {% for puzzle in puzzles %}
+        <div class="puzzle-table__row">
+            <span class="puzzle-number-cell">
+                #{{ puzzle.id }}
             </span>
             <span>
                 {% if puzzle.is_complete %}
@@ -74,14 +42,20 @@
                 {% endif %}
             </span>
             <span class="puzzle-author">{{ puzzle.created_by.username|default:"—" }}</span>
+            <span class="puzzle-created">{{ puzzle.created_at|date:"M d, Y" }}</span>
             <span class="puzzle-actions">
-                <a href="#" class="table-link">View</a>
+                <a href="/connections/{{ puzzle.id }}/" class="table-link">Play</a>
             </span>
         </div>
         {% endfor %}
     </div>
     {% else %}
-        <p class="empty-state">No puzzles yet. Create today's puzzle to get started.</p>
+        <div class="empty-state">
+            <p>No puzzles yet.</p>
+            <a href="{% url 'dashboard:create_connections' %}" class="btn btn--gold" style="margin-top:16px; display:inline-flex;">
+                Create Puzzle #1
+            </a>
+        </div>
     {% endif %}
 </section>
 

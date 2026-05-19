@@ -1,86 +1,166 @@
-/* --- Connections page overrides --- */
+/* ══════════════════════════════════════════════════════
+   LITGRID: CONNECTIONS — page styles
+   Shares dashboard's editorial dark luxury aesthetic.
+   Fonts: Playfair Display (headings) · DM Sans (body) · DM Mono (data)
+   ══════════════════════════════════════════════════════ */
+
+/* ── Page-level overrides ─────────────────────────────── */
 
 body.connections-page {
-    height: auto;
-    min-height: 100vh;
     overflow-y: auto;
 }
 
-/* Status box: horizontal layout with pips */
-.connections-status-box {
-    flex-direction: row;
-    align-items: center;
-    gap: 14px;
+/* ══════════════════════════════════════════════════════
+   PAGE HEADER  (mirrors .page-header + .dash-rule)
+   ══════════════════════════════════════════════════════ */
+
+.connections-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
-/* Mistake pips */
+.connections-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--primary-gold);
+    margin: 0 0 6px;
+    opacity: 0.9;
+}
+
+.connections-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--primary-beige);
+    margin: 0;
+    line-height: 1;
+}
+
+.connections-rule {
+    height: 1px;
+    background: linear-gradient(to right, var(--primary-gold) 0%, transparent 70%);
+    margin-bottom: 28px;
+    opacity: 0.5;
+}
+
+/* ══════════════════════════════════════════════════════
+   STATUS BAR
+   ══════════════════════════════════════════════════════ */
+
+.connections-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.mistakes-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mistakes-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(232, 220, 196, 0.45);
+}
+
 .mistake-pips {
     display: flex;
-    gap: 8px;
+    gap: 7px;
     align-items: center;
 }
 
 .mistake-pip {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background-color: var(--primary-gold);
-    transition: background-color 0.4s ease, transform 0.2s ease;
+    transition: background-color 0.4s ease, transform 0.25s ease,
+                box-shadow 0.4s ease;
+    box-shadow: 0 0 6px rgba(201, 168, 106, 0.4);
 }
 
 .mistake-pip.used {
-    background-color: #3a3a3a;
-    border: 1px solid #555;
-    transform: scale(0.85);
+    background-color: #252525;
+    border: 1px solid #3a3a3a;
+    transform: scale(0.8);
+    box-shadow: none;
 }
 
-/* --- Main wrapper --- */
-.connections-wrapper {
-    width: 95%;
-    max-width: 720px;
-    margin: 0 auto;
+.status-icons {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-bottom: 30px;
-}
-
-/* --- Solved groups area --- */
-#solved-groups-container {
-    display: flex;
-    flex-direction: column;
     gap: 8px;
 }
 
-.solved-group-row {
+/* Reuse dashboard's help-icon-btn via dashboard.css — no overrides needed */
+
+/* ══════════════════════════════════════════════════════
+   MAIN GAME WRAPPER
+   ══════════════════════════════════════════════════════ */
+
+.connections-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
+    max-width: 760px;
+    padding-bottom: 40px;
+}
+
+/* ══════════════════════════════════════════════════════
+   SOLVED GROUPS  (stack above the grid as they're found)
+   ══════════════════════════════════════════════════════ */
+
+#solved-groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.solved-group-row {
     border-radius: 8px;
-    padding: 16px 20px;
-    text-align: center;
-    animation: groupReveal 0.35s ease;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    animation: groupReveal 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes groupReveal {
-    from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
 .solved-group-category {
-    font-size: 0.95rem;
-    font-weight: 800;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #101010;
-    margin-bottom: 5px;
+    letter-spacing: 1.5px;
+    color: rgba(16, 16, 16, 0.85);
 }
 
 .solved-group-books {
-    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
     font-weight: 500;
-    color: rgba(16, 16, 16, 0.72);
+    color: rgba(16, 16, 16, 0.6);
+    text-align: right;
 }
 
-/* --- 4×4 tile grid --- */
+/* ══════════════════════════════════════════════════════
+   4 × 4 TILE GRID
+   ══════════════════════════════════════════════════════ */
+
 .connections-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -88,10 +168,11 @@ body.connections-page {
     width: 100%;
 }
 
-/* --- Individual tile --- */
+/* ── Individual tile ─────────────────────────────────── */
+
 .connection-tile {
-    background-color: var(--primary-charcoal);
-    border: 2px solid transparent;
+    background-color: #1c1c1c;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
     padding: 10px 6px 8px;
     cursor: pointer;
@@ -100,43 +181,60 @@ body.connections-page {
     align-items: center;
     justify-content: center;
     text-align: center;
-    /* Taller than before to fit cover + title + author */
-    min-height: 130px;
+    min-height: 140px;
     transition: border-color 0.15s ease, background-color 0.15s ease,
                 transform 0.15s ease, box-shadow 0.15s ease;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
+    position: relative;
+}
+
+/* Subtle top sheen line */
+.connection-tile::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.07), transparent);
+    border-radius: 1px;
 }
 
 .connection-tile:hover {
-    border-color: var(--primary-gold);
+    border-color: rgba(201, 168, 106, 0.5);
+    background-color: #222;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(201, 168, 106, 0.25);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(201, 168, 106, 0.15);
 }
 
 .connection-tile.selected {
-    background-color: #3a3220;
+    background-color: #2a2210;
     border-color: var(--primary-gold);
-    box-shadow: 0 0 14px rgba(201, 168, 106, 0.35);
+    box-shadow: 0 0 0 1px var(--primary-gold),
+                0 6px 24px rgba(201, 168, 106, 0.2);
 }
 
-/* Shake on wrong guess */
+.connection-tile.selected::before {
+    background: linear-gradient(to right, transparent, rgba(201,168,106,0.2), transparent);
+}
+
+/* ── Shake animation ─────────────────────────────────── */
 .connection-tile.shake {
     animation: tileShake 0.55s ease;
 }
 
 @keyframes tileShake {
     0%,  100% { transform: translateX(0); }
-    15%        { transform: translateX(-8px); }
-    30%        { transform: translateX(8px); }
-    45%        { transform: translateX(-5px); }
-    60%        { transform: translateX(5px); }
+    15%        { transform: translateX(-7px); }
+    30%        { transform: translateX(7px); }
+    45%        { transform: translateX(-4px); }
+    60%        { transform: translateX(4px); }
     75%        { transform: translateX(-2px); }
     90%        { transform: translateX(2px); }
 }
 
-/* --- Tile inner layout (mirrors .book-result-final) --- */
+/* ── Tile inner layout ───────────────────────────────── */
 .tile-inner {
     display: flex;
     flex-direction: column;
@@ -144,217 +242,391 @@ body.connections-page {
     justify-content: center;
     height: 100%;
     width: 100%;
-    gap: 4px;
+    gap: 5px;
 }
 
-/* --- Cover image --- */
 .tile-cover {
-    /* Proportional: takes roughly 55% of the tile's height */
-    height: 68px;
+    height: 72px;
     width: auto;
-    max-width: 90%;
+    max-width: 88%;
     object-fit: contain;
     border-radius: 3px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
     flex-shrink: 0;
     transition: transform 0.2s ease;
 }
 
 .connection-tile:hover .tile-cover {
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 
-/*
- * When the image 404s the onerror handler adds .cover-error.
- * Collapse it so the title/author centre-fill the tile naturally.
- */
 .tile-cover.cover-error {
     display: none;
 }
 
-/* --- Title & author text --- */
 .tile-title {
-    font-size: clamp(0.58rem, 1.1vw, 0.78rem);
-    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(0.58rem, 1.05vw, 0.76rem);
+    font-weight: 600;
     color: var(--primary-beige);
-    line-height: 1.2;
+    line-height: 1.25;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    /* A tiny bit of horizontal padding so long titles breathe */
-    padding: 0 4px;
+    padding: 0 5px;
 }
 
 .tile-author {
-    font-size: clamp(0.52rem, 0.85vw, 0.67rem);
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(0.5rem, 0.8vw, 0.63rem);
     color: var(--primary-gold);
-    opacity: 0.85;
+    opacity: 0.75;
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    padding: 0 4px;
+    padding: 0 5px;
 }
 
-/* --- Controls --- */
+/* ══════════════════════════════════════════════════════
+   CONTROLS
+   ══════════════════════════════════════════════════════ */
+
 .connections-controls {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
-    padding: 8px 0 4px;
+    gap: 10px;
+    padding: 10px 0 4px;
 }
 
 .ctrl-btn {
     background-color: transparent;
-    color: var(--primary-beige);
-    border: 2px solid rgba(232, 220, 196, 0.5);
-    padding: 10px 22px;
-    border-radius: 30px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
+    color: rgba(232, 220, 196, 0.55);
+    border: 1px solid rgba(232, 220, 196, 0.15);
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s ease;
+    transition: all 0.18s ease;
     white-space: nowrap;
 }
 
 .ctrl-btn:hover:not(:disabled) {
-    border-color: var(--primary-beige);
-    background-color: rgba(232, 220, 196, 0.08);
+    color: var(--primary-beige);
+    border-color: rgba(232, 220, 196, 0.35);
+    background-color: rgba(232, 220, 196, 0.05);
     transform: translateY(-1px);
 }
 
 .ctrl-btn:disabled {
-    opacity: 0.3;
+    opacity: 0.2;
     cursor: not-allowed;
 }
 
-/* Submit gets gold treatment */
+/* Submit — gold filled when active */
 .submit-btn {
-    color: rgba(201, 168, 106, 0.45);
-    border-color: rgba(201, 168, 106, 0.35);
+    color: rgba(201, 168, 106, 0.3);
+    border-color: rgba(201, 168, 106, 0.15);
 }
 
 .submit-btn:not(:disabled) {
-    color: var(--primary-black);
+    color: #1a1208;
     border-color: var(--primary-gold);
     background-color: var(--primary-gold);
-    box-shadow: 0 4px 14px rgba(201, 168, 106, 0.4);
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(201, 168, 106, 0.35);
 }
 
 .submit-btn:not(:disabled):hover {
-    background-color: #e0bb72;
+    background-color: #d9b87a;
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(201, 168, 106, 0.5);
+    box-shadow: 0 6px 20px rgba(201, 168, 106, 0.45);
 }
 
-/* --- Toast notification --- */
+/* ══════════════════════════════════════════════════════
+   TOAST
+   ══════════════════════════════════════════════════════ */
+
 .toast {
     position: fixed;
     top: 44%;
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: var(--primary-beige);
-    color: var(--primary-black);
-    padding: 11px 28px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: 1rem;
+    color: #101010;
+    padding: 10px 26px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
     z-index: 5000;
     pointer-events: none;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     animation: toastAnim 1.7s ease forwards;
 }
 
 @keyframes toastAnim {
-    0%   { opacity: 0; transform: translate(-50%, -60%); }
+    0%   { opacity: 0; transform: translate(-50%, -58%); }
     12%  { opacity: 1; transform: translate(-50%, -50%); }
     78%  { opacity: 1; transform: translate(-50%, -50%); }
     100% { opacity: 0; transform: translate(-50%, -44%); }
 }
 
-/* --- End modal: group summary --- */
+/* ══════════════════════════════════════════════════════
+   END MODAL
+   ══════════════════════════════════════════════════════ */
+
+#end-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#end-modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#end-modal-container {
+    background-color: #111;
+    border: 1px solid rgba(201, 168, 106, 0.2);
+    border-radius: 14px;
+    padding: 36px 32px 28px;
+    max-width: 420px;
+    width: 90%;
+    position: relative;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9);
+    transform: translateY(16px);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#end-modal-backdrop.visible #end-modal-container {
+    transform: translateY(0);
+}
+
+.end-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.9rem;
+    font-weight: 900;
+    color: var(--primary-beige);
+    margin: 0 0 24px;
+    line-height: 1.1;
+}
+
 .end-group-summary {
     display: flex;
     flex-direction: column;
-    gap: 7px;
-    margin-bottom: 24px;
-    width: 100%;
+    gap: 6px;
+    margin-bottom: 28px;
 }
 
 .end-summary-row {
     border-radius: 6px;
-    padding: 11px 16px;
+    padding: 10px 16px;
     text-align: center;
 }
 
 .end-summary-category {
-    font-weight: 800;
-    font-size: 0.82rem;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #101010;
+    letter-spacing: 1px;
+    color: rgba(16, 16, 16, 0.85);
 }
 
 .end-summary-row.not-solved {
-    opacity: 0.4;
+    opacity: 0.35;
 }
 
-/* Override start-game-btn to gold since action-button defaults red */
+.end-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 20px;
+    margin-bottom: 16px;
+}
+
+.timer-container {
+    text-align: left;
+}
+
+.timer-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(232, 220, 196, 0.4);
+    margin: 0 0 6px;
+}
+
+.other-puzzles-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.other-puzzle-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--primary-gold);
+    text-decoration: none;
+    border: 1px solid rgba(201, 168, 106, 0.25);
+    padding: 4px 10px;
+    border-radius: 5px;
+    transition: all 0.15s ease;
+}
+
+.other-puzzle-link:hover {
+    background: rgba(201, 168, 106, 0.1);
+    border-color: var(--primary-gold);
+}
+
+.share-button {
+    background-color: var(--primary-gold);
+    color: #1a1208;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.18s ease;
+    text-transform: uppercase;
+}
+
+.share-button:hover {
+    background-color: #d9b87a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(201, 168, 106, 0.35);
+}
+
+.back-link {
+    background: none;
+    border: none;
+    color: rgba(232, 220, 196, 0.4);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s;
+    padding: 0;
+}
+
+.back-link:hover {
+    color: var(--primary-beige);
+}
+
+/* ══════════════════════════════════════════════════════
+   HELP MODAL  (overrides style.css defaults for this page)
+   ══════════════════════════════════════════════════════ */
+
 #start-game-btn {
-    color: var(--primary-gold) !important;
+    background-color: var(--primary-gold) !important;
+    color: #1a1208 !important;
     border-color: var(--primary-gold) !important;
     width: 100%;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
 }
 
 #start-game-btn:hover {
-    background-color: var(--primary-gold) !important;
-    color: var(--primary-black) !important;
+    background-color: #d9b87a !important;
+    transform: translateY(-1px);
 }
 
-/* --- Responsive --- */
+/* ══════════════════════════════════════════════════════
+   ARCHIVE MODAL  (puzzle selector)
+   ══════════════════════════════════════════════════════ */
+
+.archive-item--current {
+    background-color: rgba(201, 168, 106, 0.07);
+    border-color: rgba(201, 168, 106, 0.25) !important;
+    pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════
+   NO PUZZLE STATE
+   ══════════════════════════════════════════════════════ */
+
+.no-puzzle-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: rgba(232, 220, 196, 0.3);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════ */
+
 @media (max-width: 640px) {
+    .connections-title {
+        font-size: 1.7rem;
+    }
+
     .connections-wrapper {
-        width: 100%;
-        padding: 0 6px 24px;
+        gap: 8px;
+        padding-bottom: 28px;
     }
 
     .connection-tile {
-        min-height: 105px;
+        min-height: 110px;
         padding: 7px 4px 6px;
     }
 
     .tile-cover {
-        height: 52px;
-    }
-
-    .connections-controls {
-        gap: 8px;
+        height: 54px;
     }
 
     .ctrl-btn {
-        padding: 9px 14px;
-        font-size: 0.75rem;
+        padding: 8px 13px;
+        font-size: 0.68rem;
     }
 
-    .solved-group-category {
-        font-size: 0.85rem;
+    .connections-controls {
+        gap: 7px;
     }
 
     .solved-group-books {
-        font-size: 0.72rem;
+        display: none; /* save vertical space on small screens */
     }
 }
 
 @media (max-width: 380px) {
     .connection-tile {
-        min-height: 90px;
+        min-height: 92px;
     }
 
     .tile-cover {
-        height: 42px;
+        height: 44px;
     }
 }
