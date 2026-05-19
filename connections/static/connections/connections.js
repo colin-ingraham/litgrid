@@ -249,7 +249,7 @@ function buildOtherPuzzleLinks() {
         return;
     }
     container.innerHTML = others.map(p =>
-        `<a href="/connections/${p.id}/" class="other-puzzle-link">Puzzle #${p.id}</a>`
+        `<a href="/connections/${p.id}/" class="other-puzzle-link">Puzzle #${p.rank}</a>`
     ).join('');
 }
 
@@ -268,7 +268,7 @@ function buildArchiveList() {
         const isCurrent = p.id === CURRENT_PUZZLE_ID;
         return `
             <a href="/connections/${p.id}/" class="archive-item${isCurrent ? ' archive-item--current' : ''}">
-                <span class="archive-date">Puzzle #${p.id}</span>
+                <span class="archive-date">Puzzle #${p.rank}</span>
                 ${isCurrent ? '<span class="archive-status">Current</span>' : ''}
             </a>
         `;
@@ -325,7 +325,7 @@ function shareResult() {
         return `${emoji} ${check} ${group.category}`;
     });
     const text = [
-        `Litgrid: Connections — Puzzle #${CURRENT_PUZZLE_ID}`,
+        `Litgrid: Connections — Puzzle #${CURRENT_RANK}`,
         `Mistakes: ${4 - mistakes}/4`,
         '',
         ...lines,

@@ -23,7 +23,7 @@
     {% if puzzles %}
     <div class="puzzle-table">
         <div class="puzzle-table__header">
-            <span>Puzzle</span>
+            <span>#</span>
             <span>Status</span>
             <span>Created by</span>
             <span>Created</span>
@@ -32,7 +32,7 @@
         {% for puzzle in puzzles %}
         <div class="puzzle-table__row">
             <span class="puzzle-number-cell">
-                #{{ puzzle.id }}
+                #{{ forloop.counter }}
             </span>
             <span>
                 {% if puzzle.is_complete %}

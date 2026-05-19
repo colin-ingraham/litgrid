@@ -56,14 +56,19 @@ def _puzzle_to_json(puzzle):
 
 
 def _all_puzzle_stubs():
-    """Return lightweight list of all puzzles for the selector."""
+    """
+    Return puzzles ordered by id, each annotated with a 1-based rank.
+    Rank is purely positional — deletion of a puzzle renumbers the rest
+    automatically so there are never gaps in the display.
+    """
     try:
         from dashboard.models import ConnectionsPuzzle
-        return list(
+        ids = list(
             ConnectionsPuzzle.objects
             .order_by('id')
-            .values('id')
+            .values_list('id', flat=True)
         )
+        return [{'id': pid, 'rank': rank} for rank, pid in enumerate(ids, start=1)]
     except Exception:
         return []
 
@@ -72,27 +77,35 @@ def ConnectionsGame(request, puzzle_id=None):
     try:
         from dashboard.models import ConnectionsPuzzle
 
+        all_puzzles = _all_puzzle_stubs()
+
         if puzzle_id is not None:
             puzzle = get_object_or_404(ConnectionsPuzzle, pk=puzzle_id)
         else:
             puzzle = ConnectionsPuzzle.objects.order_by('id').first()
 
         if puzzle:
-            puzzle_data = _puzzle_to_json(puzzle)
-            current_id  = puzzle.id
+            puzzle_data  = _puzzle_to_json(puzzle)
+            current_id   = puzzle.id
+            # Find this puzzle's rank from the stub list
+            current_rank = next(
+                (p['rank'] for p in all_puzzles if p['id'] == current_id), 1
+            )
         else:
-            puzzle_data = None
-            current_id  = None
+            puzzle_data  = None
+            current_id   = None
+            current_rank = None
 
     except Exception:
-        puzzle_data = None
-        current_id  = None
-
-    all_puzzles = _all_puzzle_stubs()
+        puzzle_data  = None
+        current_id   = None
+        current_rank = None
+        all_puzzles  = []
 
     context = {
-        'puzzle_data_json': json.dumps(puzzle_data) if puzzle_data else 'null',
+        'puzzle_data_json':  json.dumps(puzzle_data) if puzzle_data else 'null',
         'current_puzzle_id': current_id,
+        'current_rank':      current_rank,
         'all_puzzles_json':  json.dumps(all_puzzles),
     }
     return render(request, 'connections/connections.html', context)

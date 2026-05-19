@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Connections{% if current_puzzle_id %} #{{ current_puzzle_id }}{% endif %} — Litgrid{% endblock %}
+{% block title %}Connections{% if current_rank %} #{{ current_rank }}{% endif %} — Litgrid{% endblock %}
 {% block body_class %}connections-page{% endblock %}
 {% block nav_connections_game %}active{% endblock %}
 
@@ -15,7 +15,7 @@
 <div class="connections-page-header">
     <div>
         <p class="connections-eyebrow">Litgrid</p>
-        <h1 class="connections-title">Connections{% if current_puzzle_id %} <span style="color:var(--primary-gold); font-size:1.6rem; opacity:0.75;">#{{ current_puzzle_id }}</span>{% endif %}</h1>
+        <h1 class="connections-title">Connections{% if current_rank %} <span style="color:var(--primary-gold); font-size:1.6rem; opacity:0.75;">#{{ current_rank }}</span>{% endif %}</h1>
     </div>
 
     <div class="connections-status-bar" style="margin-bottom:0;">
@@ -128,6 +128,7 @@
 <script>
     const PUZZLE_DATA       = {{ puzzle_data_json|safe }};
     const CURRENT_PUZZLE_ID = {{ current_puzzle_id|default:"null" }};
+    const CURRENT_RANK      = {{ current_rank|default:"null" }};
     const ALL_PUZZLES       = {{ all_puzzles_json|safe }};
 </script>
 
