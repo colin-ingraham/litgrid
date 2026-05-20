@@ -160,15 +160,32 @@ function onSubmit() {
     const allSame       = groupIndices.every(g => g === groupIndices[0]);
 
     if (allSame) {
-        const groupIdx = groupIndices[0];
-        playerSolvedGroups.add(groupIdx);
-        solvedGroups.add(groupIdx);
-        selected.clear();
-        revealSolvedGroup(groupIdx);
-        renderGrid();
-        if (solvedGroups.size === PUZZLE_DATA.groups.length) {
-            setTimeout(() => gameOver(true), 500);
-        }
+        const groupIdx    = groupIndices[0];
+        const correctEls  = Array.from(
+            document.querySelectorAll('.connection-tile.selected')
+        );
+
+        // Staggered bounce + flash, then reveal
+        correctEls.forEach((el, i) => {
+            setTimeout(() => {
+                el.classList.add('bounce', 'correct-flash');
+                el.addEventListener('animationend', () => {
+                    el.classList.remove('bounce', 'correct-flash');
+                }, { once: true });
+            }, i * 80);
+        });
+
+        const revealDelay = 80 * correctEls.length + 420;
+        setTimeout(() => {
+            playerSolvedGroups.add(groupIdx);
+            solvedGroups.add(groupIdx);
+            selected.clear();
+            revealSolvedGroup(groupIdx);
+            renderGrid();
+            if (solvedGroups.size === PUZZLE_DATA.groups.length) {
+                setTimeout(() => gameOver(true), 500);
+            }
+        }, revealDelay);
     } else {
         const counts = {};
         groupIndices.forEach(g => { counts[g] = (counts[g] || 0) + 1; });
@@ -194,12 +211,33 @@ function onSubmit() {
 function revealSolvedGroup(groupIdx) {
     const group     = PUZZLE_DATA.groups[groupIdx];
     const container = document.getElementById('solved-groups-container');
-    const row       = document.createElement('div');
-    row.className   = 'solved-group-row';
+    const books     = group.books;
+
+    // Split 4 books: left pair [0,1], right pair [2,3]
+    const coverImg = (book) =>
+        `<img class="solved-cover"
+              src="${book.cover}"
+              alt="${book.title}"
+              title="${book.title}"
+              onerror="this.classList.add('missing')"
+              draggable="false" />`;
+
+    const row = document.createElement('div');
+    row.className = 'solved-group-row';
     row.style.backgroundColor = DIFF_COLORS[group.difficulty - 1];
     row.innerHTML = `
-        <div class="solved-group-category">${group.category}</div>
-        <div class="solved-group-books">${group.books.map(b => b.title).join(' · ')}</div>
+        <div class="solved-group-left-covers">
+            ${coverImg(books[0])}
+            ${coverImg(books[1])}
+        </div>
+        <div class="solved-group-center">
+            <span class="solved-group-category">${group.category}</span>
+            <span class="solved-group-books">${books.map(b => b.title).join(' · ')}</span>
+        </div>
+        <div class="solved-group-right-covers">
+            ${coverImg(books[2])}
+            ${coverImg(books[3])}
+        </div>
     `;
     container.appendChild(row);
 }
