@@ -61,8 +61,10 @@
     padding: 28px 24px 24px;
     border-bottom: 1px solid var(--dash-border);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0;
 }
 
 .brand-name {
@@ -72,6 +74,18 @@
     color: var(--dash-gold);
     letter-spacing: 1px;
     line-height: 1;
+}
+
+.brand-tagline {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--dash-muted);
+    opacity: 0.6;
+    margin-top: 6px;
+    text-align: center;
 }
 
 .brand-tag {
@@ -165,6 +179,11 @@
     color: var(--dash-muted);
     text-decoration: none;
     transition: color 0.15s;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: var(--font-body);
 }
 
 .logout-link:hover {
@@ -493,4 +512,41 @@
 .btn--sm {
     padding: 7px 14px;
     font-size: 0.78rem;
+}
+
+/* ── Draft table extras ── */
+.draft-table-header {
+    grid-template-columns: 1fr 130px 150px 100px !important;
+}
+
+.puzzle-table__row.draft-row {
+    grid-template-columns: 1fr 130px 150px 100px;
+}
+
+.draft-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--dash-text);
+}
+
+.table-link--danger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--dash-danger);
+    opacity: 0.6;
+    padding: 0;
+    transition: opacity 0.15s;
+}
+
+.table-link--danger:hover {
+    opacity: 1;
+}
+
+/* Draft saved status pulse */
+.save-status.saved {
+    color: var(--dash-success);
 }

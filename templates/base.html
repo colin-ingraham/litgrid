@@ -19,6 +19,7 @@
     <aside class="dash-sidebar">
         <div class="sidebar-brand">
             <span class="brand-name">Litgrid</span>
+            <span class="brand-tagline">A literary puzzle game</span>
         </div>
 
         <nav class="sidebar-nav">
@@ -46,7 +47,10 @@
         <div class="sidebar-footer">
             {% if request.user.is_authenticated %}
                 <span class="sidebar-user">{{ request.user.username }}</span>
-                <a href="/admin/logout/" class="logout-link">Sign out</a>
+                <form method="post" action="/admin/logout/" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-link">Sign out</button>
+                </form>
             {% endif %}
         </div>
     </aside>

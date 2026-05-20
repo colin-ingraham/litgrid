@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ConnectionsPuzzle, ConnectionsGroup, ConnectionsBookEntry
+from .models import ConnectionsPuzzle, ConnectionsGroup, ConnectionsBookEntry, ConnectionsDraft
 
 
 class ConnectionsBookEntryInline(admin.TabularInline):
@@ -13,24 +13,29 @@ class ConnectionsGroupInline(admin.StackedInline):
     model = ConnectionsGroup
     extra = 0
     readonly_fields = ('order', 'difficulty')
-    inlines = [ConnectionsBookEntryInline]
 
 
 @admin.register(ConnectionsGroup)
 class ConnectionsGroupAdmin(admin.ModelAdmin):
-    list_display  = ('__str__', 'puzzle', 'difficulty', 'order')
-    list_filter   = ('difficulty',)
-    inlines       = [ConnectionsBookEntryInline]
+    list_display = ('__str__', 'puzzle', 'difficulty', 'order')
+    list_filter  = ('difficulty',)
+    inlines      = [ConnectionsBookEntryInline]
 
 
 @admin.register(ConnectionsPuzzle)
 class ConnectionsPuzzleAdmin(admin.ModelAdmin):
-    list_display   = ('__str__', 'created_by', 'created_at', 'is_complete')
-    list_filter    = ('created_by',)
+    list_display    = ('__str__', 'created_by', 'created_at', 'is_complete')
+    list_filter     = ('created_by',)
     readonly_fields = ('created_at', 'updated_at', 'created_by')
-    inlines        = [ConnectionsGroupInline]
+    inlines         = [ConnectionsGroupInline]
 
     def is_complete(self, obj):
         return obj.is_complete()
     is_complete.boolean = True
     is_complete.short_description = 'Complete'
+
+
+@admin.register(ConnectionsDraft)
+class ConnectionsDraftAdmin(admin.ModelAdmin):
+    list_display    = ('__str__', 'created_by', 'books_placed', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'created_by')

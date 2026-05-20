@@ -17,8 +17,42 @@
 
 <div class="dash-rule"></div>
 
+<!-- ── Drafts ── -->
+{% if drafts %}
 <section class="recent-section">
-    <h2 class="section-heading">All Puzzles</h2>
+    <h2 class="section-heading">Unfinished Puzzles</h2>
+    <div class="puzzle-table">
+        <div class="puzzle-table__header draft-table-header">
+            <span>Draft</span>
+            <span>Progress</span>
+            <span>Last edited</span>
+            <span>Actions</span>
+        </div>
+        {% for draft in drafts %}
+        <div class="puzzle-table__row draft-row">
+            <span class="puzzle-date-cell draft-title">
+                {{ draft.preview_title }}
+            </span>
+            <span>
+                <span class="badge badge--yellow">{{ draft.books_placed }} / 16 books</span>
+            </span>
+            <span class="puzzle-author">{{ draft.updated_at|date:"M d, Y g:i a" }}</span>
+            <span class="puzzle-actions">
+                <a href="{% url 'dashboard:edit_connections' draft.id %}" class="table-link">Edit</a>
+                <button
+                    class="table-link table-link--danger delete-draft-btn"
+                    data-draft-id="{{ draft.id }}"
+                >Delete</button>
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- ── Published puzzles ── -->
+<section class="recent-section">
+    <h2 class="section-heading">Published Puzzles</h2>
 
     {% if puzzles %}
     <div class="puzzle-table">
@@ -31,9 +65,7 @@
         </div>
         {% for puzzle in puzzles %}
         <div class="puzzle-table__row">
-            <span class="puzzle-number-cell">
-                #{{ forloop.counter }}
-            </span>
+            <span class="puzzle-number-cell">#{{ forloop.counter }}</span>
             <span>
                 {% if puzzle.is_complete %}
                     <span class="badge badge--green">Complete</span>
@@ -58,5 +90,27 @@
         </div>
     {% endif %}
 </section>
+
+<script>
+document.querySelectorAll('.delete-draft-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        if (!confirm('Delete this draft? This cannot be undone.')) return;
+        const draftId = btn.dataset.draftId;
+        const resp = await fetch(`/dashboard/api/draft/delete/${draftId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+            },
+        });
+        if ((await resp.json()).success) {
+            btn.closest('.draft-row').remove();
+            // Hide section header if no drafts left
+            if (!document.querySelector('.draft-row')) {
+                document.querySelector('.recent-section:first-of-type').remove();
+            }
+        }
+    });
+});
+</script>
 
 {% endblock %}

@@ -4,7 +4,7 @@ import requests
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.conf import settings
 
@@ -16,10 +16,10 @@ from library.views import (
     get_or_create_author,
     get_or_create_subjects,
 )
-from .models import ConnectionsPuzzle, ConnectionsGroup, ConnectionsBookEntry
+from .models import ConnectionsPuzzle, ConnectionsGroup, ConnectionsBookEntry, ConnectionsDraft
 
 
-# --- Constants ---------------------------------------------------------------
+# ── Constants ─────────────────────────────────────────────────────────────────
 
 DIFFICULTY_LEVELS = [
     {'order': 0, 'difficulty': 1, 'name': 'Easy',   'color': '#e8c84a'},
@@ -29,14 +29,9 @@ DIFFICULTY_LEVELS = [
 ]
 
 
-# --- Utility -----------------------------------------------------------------
+# ── Utility ───────────────────────────────────────────────────────────────────
 
 def _get_or_fetch_book(google_book_id):
-    """
-    Return a library.Book for the given google_book_id.
-    Fetches from Google Books + OpenLibrary and saves if not already in the DB.
-    Returns (book, error_string). One will always be None.
-    """
     book = Book.objects.filter(google_book_id=google_book_id).first()
     if book:
         return book, None
@@ -83,25 +78,81 @@ def _get_or_fetch_book(google_book_id):
     return book, None
 
 
-# --- Views -------------------------------------------------------------------
+# ── Pages ─────────────────────────────────────────────────────────────────────
 
 @login_required
 def dashboard_home(request):
     puzzles = ConnectionsPuzzle.objects.select_related('created_by').order_by('-id')[:20]
+    drafts  = ConnectionsDraft.objects.filter(created_by=request.user).order_by('-updated_at')
     context = {
         'puzzles': puzzles,
+        'drafts':  drafts,
     }
     return render(request, 'dashboard/home.html', context)
 
 
 @login_required
 def create_connections(request):
+    """Always starts a fresh blank editor."""
     context = {
+        'draft_id':          None,
+        'draft_data_json':   'null',
         'difficulty_levels': DIFFICULTY_LEVELS,
         'book_search_url':   '/api/book-search/',
     }
     return render(request, 'dashboard/create_connections.html', context)
 
+
+@login_required
+def edit_connections(request, draft_id):
+    """Load an existing draft into the editor."""
+    draft = get_object_or_404(ConnectionsDraft, pk=draft_id, created_by=request.user)
+    context = {
+        'draft_id':          draft.id,
+        'draft_data_json':   json.dumps(draft.data),
+        'difficulty_levels': DIFFICULTY_LEVELS,
+        'book_search_url':   '/api/book-search/',
+    }
+    return render(request, 'dashboard/create_connections.html', context)
+
+
+# ── Draft API ─────────────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def save_draft(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
+
+    draft_id   = data.get('draft_id')
+    draft_data = data.get('data', {})
+
+    if draft_id:
+        # Update existing draft (must belong to this user)
+        draft = get_object_or_404(ConnectionsDraft, pk=draft_id, created_by=request.user)
+        draft.data = draft_data
+        draft.save()
+    else:
+        # Create new draft
+        draft = ConnectionsDraft.objects.create(
+            created_by=request.user,
+            data=draft_data,
+        )
+
+    return JsonResponse({'success': True, 'draft_id': draft.id})
+
+
+@login_required
+@require_POST
+def delete_draft(request, draft_id):
+    draft = get_object_or_404(ConnectionsDraft, pk=draft_id, created_by=request.user)
+    draft.delete()
+    return JsonResponse({'success': True})
+
+
+# ── Puzzle save ───────────────────────────────────────────────────────────────
 
 @login_required
 @require_POST
@@ -112,6 +163,7 @@ def save_connections_puzzle(request):
         return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
 
     groups_data = data.get('groups', [])
+    draft_id    = data.get('draft_id')
 
     if len(groups_data) != 4:
         return JsonResponse(
@@ -132,7 +184,7 @@ def save_connections_puzzle(request):
                 status=400,
             )
 
-    # Ensure all 16 books are in the DB before opening the transaction
+    # Ensure all 16 books are in the DB
     resolved = []
     for group_data in groups_data:
         group_books = []
@@ -155,6 +207,11 @@ def save_connections_puzzle(request):
                 )
                 for slot, book in enumerate(books):
                     ConnectionsBookEntry.objects.create(group=group, book=book, slot=slot)
+
+            # Delete the draft now that it's been published
+            if draft_id:
+                ConnectionsDraft.objects.filter(pk=draft_id, created_by=request.user).delete()
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 

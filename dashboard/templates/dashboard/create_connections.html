@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Create Connections{% endblock %}
+{% block title %}{% if draft_id %}Edit Draft{% else %}New Connections Puzzle{% endif %}{% endblock %}
 {% block nav_connections %}active{% endblock %}
 
 {% block extra_css %}
@@ -17,17 +17,16 @@
         Dashboard
     </a>
     <div class="topbar-center">
-        <h1 class="topbar-title">New Connections Puzzle</h1>
+        <h1 class="topbar-title">{% if draft_id %}Edit Draft{% else %}New Connections Puzzle{% endif %}</h1>
     </div>
     <div class="topbar-actions">
         <span id="save-status" class="save-status"></span>
-        <button id="save-btn" class="btn btn--gold" disabled>Save Puzzle</button>
+        <button id="save-btn" class="btn btn--gold" disabled>Publish Puzzle</button>
     </div>
 </div>
 
 <!-- Puzzle editor -->
 <div class="puzzle-editor">
-
     {% for level in difficulty_levels %}
     <div class="group-panel" data-group="{{ level.order }}">
         <div class="group-accent-bar" style="background: {{ level.color }};"></div>
@@ -55,7 +54,6 @@
         </div>
     </div>
     {% endfor %}
-
 </div>
 
 <!-- Search Modal -->
@@ -89,7 +87,10 @@
 <script>
     const BOOK_SEARCH_URL = "{{ book_search_url }}";
     const SAVE_URL        = "{% url 'dashboard:save_puzzle' %}";
+    const DRAFT_SAVE_URL  = "{% url 'dashboard:save_draft' %}";
     const CSRF_TOKEN      = document.querySelector('meta[name="csrf-token"]').content;
+    const INITIAL_DRAFT_ID   = {{ draft_id|default:"null" }};
+    const INITIAL_DRAFT_DATA = {{ draft_data_json|safe }};
 </script>
 
 {% endblock %}

@@ -36,7 +36,7 @@ class ConnectionsGroup(models.Model):
     puzzle     = models.ForeignKey(ConnectionsPuzzle, related_name='groups', on_delete=models.CASCADE)
     category   = models.CharField(max_length=200)
     difficulty = models.IntegerField(choices=DIFFICULTY_CHOICES)
-    order      = models.IntegerField()  # 0-3, locked during creation
+    order      = models.IntegerField()
 
     class Meta:
         ordering = ['order']
@@ -56,7 +56,7 @@ class ConnectionsGroup(models.Model):
 class ConnectionsBookEntry(models.Model):
     group = models.ForeignKey(ConnectionsGroup, related_name='books', on_delete=models.CASCADE)
     book  = models.ForeignKey('library.Book', on_delete=models.PROTECT)
-    slot  = models.IntegerField()  # 0-3
+    slot  = models.IntegerField()
 
     class Meta:
         ordering = ['slot']
@@ -64,3 +64,46 @@ class ConnectionsBookEntry(models.Model):
 
     def __str__(self):
         return f"{self.group} | Slot {self.slot}: {self.book.title}"
+
+
+class ConnectionsDraft(models.Model):
+    """
+    Stores an in-progress connections puzzle as a JSON blob.
+    No book FK relations — books are committed to the DB only on final save.
+    """
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='connections_drafts',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    # Full editor state: { groups: [ { category, books: [{id, title, author, cover}|null] } ] }
+    data       = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Draft #{self.id} by {self.created_by} ({self.updated_at:%Y-%m-%d %H:%M})"
+
+    def books_placed(self):
+        """Count of non-null book slots across all groups."""
+        try:
+            return sum(
+                1 for g in self.data.get('groups', [])
+                for b in g.get('books', [])
+                if b is not None
+            )
+        except Exception:
+            return 0
+
+    def preview_title(self):
+        """First non-empty category name, for display."""
+        try:
+            for g in self.data.get('groups', []):
+                if g.get('category', '').strip():
+                    return g['category'].strip()
+        except Exception:
+            pass
+        return 'Untitled Draft'
