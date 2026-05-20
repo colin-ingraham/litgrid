@@ -65,7 +65,7 @@
         </div>
         {% for puzzle in puzzles %}
         <div class="puzzle-table__row">
-            <span class="puzzle-number-cell">#{{ forloop.counter }}</span>
+            <span class="puzzle-number-cell">#{{ forloop.revcounter }}</span>
             <span>
                 {% if puzzle.is_complete %}
                     <span class="badge badge--green">Complete</span>

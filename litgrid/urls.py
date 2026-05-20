@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/connections/', permanent=False)),
     path("connections/", include("connections.urls"), name="connections"),
+    path("classic/", include("game.urls"), name="game"),
     path("library/", include("library.urls"), name="library"),
     path('api/', include('library.urls')),
     path('dashboard/', include('dashboard.urls')),
