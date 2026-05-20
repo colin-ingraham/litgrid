@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", include("game.urls"), name="game"),
+    path('', RedirectView.as_view(url='/connections/', permanent=False)),
     path("connections/", include("connections.urls"), name="connections"),
     path("library/", include("library.urls"), name="library"),
     path('api/', include('library.urls')),
