@@ -530,21 +530,38 @@ body.connections-page {
 
 .end-summary-row {
     border-radius: 6px;
-    padding: 10px 16px;
+    padding: 11px 18px;
+    text-align: left;
+}
+
+.end-summary-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.end-summary-order {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(16, 16, 16, 0.55);
+    min-width: 28px;
+    flex-shrink: 0;
     text-align: center;
 }
 
 .end-summary-category {
     font-family: 'DM Mono', monospace;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: rgba(16, 16, 16, 0.85);
+    color: rgba(16, 16, 16, 0.9);
+    flex: 1;
 }
 
 .end-summary-row.not-solved {
-    opacity: 0.35;
+    opacity: 0.4;
 }
 
 .end-footer {

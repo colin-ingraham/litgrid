@@ -6,13 +6,14 @@ if (!PUZZLE_DATA) {
 }
 
 const DIFF_COLORS = ['#e8c84a', '#6aaa64', '#4a90d9', '#9b59b6'];
-const DIFF_EMOJIS = ['🟡', '🟢', '🔵', '🟣'];
+const DIFF_EMOJIS = ['🟨', '🟩', '🟦', '🟪'];  // NYT-style: yellow/green/blue/purple
 
 // --- Game state ---
 let tiles = [];
 let selected = new Set();
 let solvedGroups = new Set();
 let playerSolvedGroups = new Set();
+let guessHistory = [];  // each entry: [groupIdx, groupIdx, groupIdx, groupIdx]
 let mistakes = 4;
 let isGameOver = false;
 
@@ -175,6 +176,9 @@ function onSubmit() {
             }, i * 80);
         });
 
+        // Record the guess immediately (before the animation delay)
+        guessHistory.push([...groupIndices]);
+
         const revealDelay = 80 * correctEls.length + 420;
         setTimeout(() => {
             playerSolvedGroups.add(groupIdx);
@@ -196,6 +200,7 @@ function onSubmit() {
             el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
         });
 
+        guessHistory.push([...groupIndices]);
         mistakes--;
         renderMistakes();
 
@@ -265,14 +270,31 @@ function gameOver(won) {
 }
 
 function buildEndSummary() {
-    const container = document.getElementById('end-group-summary');
+    const container  = document.getElementById('end-group-summary');
     container.innerHTML = '';
+
+    // Build a map of groupIndex → solve order (1-based)
+    const solveOrder = {};
+    [...playerSolvedGroups].forEach((idx, i) => { solveOrder[idx] = i + 1; });
+
+    const ordinals = ['', '1st', '2nd', '3rd', '4th'];
+
     PUZZLE_DATA.groups.forEach((group, idx) => {
-        const solved = playerSolvedGroups.has(idx);
-        const row    = document.createElement('div');
+        const order  = solveOrder[idx];  // undefined if not solved by player
+        const solved = order !== undefined;
+
+        const row = document.createElement('div');
         row.className = `end-summary-row${solved ? '' : ' not-solved'}`;
         row.style.backgroundColor = DIFF_COLORS[group.difficulty - 1];
-        row.innerHTML = `<span class="end-summary-category">${group.category}</span>`;
+
+        row.innerHTML = `
+            <div class="end-summary-inner">
+                <span class="end-summary-order">
+                    ${solved ? ordinals[order] : '✗'}
+                </span>
+                <span class="end-summary-category">${group.category}</span>
+            </div>
+        `;
         container.appendChild(row);
     });
 }
@@ -357,20 +379,24 @@ function showToast(message) {
 
 // --- Share ---
 function shareResult() {
-    const lines = PUZZLE_DATA.groups.map((group, idx) => {
-        const emoji = DIFF_EMOJIS[group.difficulty - 1];
-        const check = playerSolvedGroups.has(idx) ? '✅' : '❌';
-        return `${emoji} ${check} ${group.category}`;
+    // Each guess row: 4 squares colored by the actual group of each tile
+    const guessRows = guessHistory.map(groupIndices => {
+        return groupIndices
+            .map(gIdx => DIFF_EMOJIS[PUZZLE_DATA.groups[gIdx].difficulty - 1])
+            .join('');
     });
-    const text = [
-        `Litgrid: Connections — Puzzle #${CURRENT_RANK}`,
-        `Mistakes: ${4 - mistakes}/4`,
+
+    const won = playerSolvedGroups.size === PUZZLE_DATA.groups.length;
+
+    const shareText = [
+        `Litgrid: Connections`,
+        `Puzzle #${CURRENT_RANK}`,
         '',
-        ...lines,
+        ...guessRows,
     ].join('\n');
 
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!'));
+        navigator.clipboard.writeText(shareText).then(() => showToast('Copied to clipboard!'));
     } else {
         showToast('Result copied!');
     }
