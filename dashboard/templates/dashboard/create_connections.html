@@ -44,6 +44,10 @@
                     autocomplete="off"
                 />
                 <span class="group-progress" id="progress-{{ level.order }}">0 / 4</span>
+                <div class="group-reorder-btns">
+                    <button class="reorder-btn reorder-up"  data-group="{{ level.order }}" title="Move up"   {% if level.order == 0 %}disabled{% endif %}>▲</button>
+                    <button class="reorder-btn reorder-down" data-group="{{ level.order }}" title="Move down" {% if level.order == 3 %}disabled{% endif %}>▼</button>
+                </div>
             </div>
             <div class="book-slot-row">
                 <div class="book-slot" data-group="{{ level.order }}" data-slot="0"></div>

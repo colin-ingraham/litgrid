@@ -110,6 +110,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    padding-top: 24px;
 }
 
 .group-panel {
@@ -565,4 +566,36 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     flex-shrink: 0;
+}
+
+/* ── Group reorder buttons ── */
+.group-reorder-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+
+.reorder-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--dash-border);
+    border-radius: 4px;
+    color: var(--dash-muted);
+    font-size: 0.6rem;
+    line-height: 1;
+    padding: 3px 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.reorder-btn:hover:not(:disabled) {
+    background: rgba(201, 168, 106, 0.12);
+    border-color: var(--dash-gold);
+    color: var(--dash-gold);
+}
+
+.reorder-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
 }

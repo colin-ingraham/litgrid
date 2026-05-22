@@ -1,60 +1,17 @@
+LITGRID CONNECTIONS TODO:
 
 
-ADDITIONS TO GET FROM ALPHA -> BETA
-
-Next time:
-You are implementing rarity SCORE
-Add a new model that tracks a puzzle answer stat. Linked to a specific puzzle,
- then col and row, then book and count
-
- Then also return the top 5 results to the frontend when the user wants to see results
+- Get the website published??
 
 
 
 
 
-- Data should not be reset when switching between games.
-    If I complete the daily puzzle, then go to an archived game, my daily puzzle result needs to remain
 
-2. See if we can figure out how the fuck to make the portable monitor view useable
-3. Have AI playtest, see what will make this game more fun for book lovers
+Other Game Ideas:
 
-5. I ABSOLUTELY NEED A RARITY SCORE - Thats what makes grid games fun
-
-Category Additions:
-- Has a TV show
-- Has movie adaptation
-- Banned Books
-
-BETA ADDITIONS:
-- HINT SYSTEM
-1. PLAYER STATS
-2. TOP ANSWERS PER CELL - Users can click on Top Answers for each cell and see what most users guessed as their answer for that specific cell. 
-    Also shows user the percentage of users that guessed their same book. If they are only one to guess a book, then they get a little message "You were unique!" 
-3. USER ACCOUNTS - User can sign in, view their past stats
-
-5. MOBILE POLISH - Make sure game is even better on mobile than computer
-6. ADMIN/CONTENT DASHBOARD - Way to view everything. Some way for me to see user counts, but then more importantly update Categories or something. Not sure yet but def need it. Way to plan out future Litgrids.
-    Also where I can go over User Reports
-7. SHARE LOGIC - Grid of emojis to publish prob. 
-8. REPORT THIS BOOK - Users can hit the button and explain a bug they discovered. Feedback button, perhaps
+Bookle - A specific book is the chosen for the day. User can guess books and see if theme, decade, etc aligns. 
+First Lines - Show first line of a famous book
 
 
-
-
-
-FEATURES:
-- Have a percentage score for each book that shows the user what percent of users '
-guessed that same guess
-    - This means we need to store each user guess
-
-
-
-Alright, so here are a list of features that when I was playing this early alpha I noticed as problems
-- Users can repeat guesses (if they apply. Make sure all books are unique)
-
-- End Screen listed below
-- Need to store user guesses for comparison later on
-- Need to have a more dynamic way of getting a Litgrid board (maybe pull from file somehow?)
-- MORE CATEGORIES
-
+playlitgrid.com - Domain name??

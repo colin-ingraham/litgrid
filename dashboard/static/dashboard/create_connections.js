@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     renderAllSlots();
     bindCategoryInputs();
+    bindReorderButtons();
     bindSearchModal();
     bindSaveButton();
 });
@@ -163,6 +164,44 @@ function renderSlot(el, groupIdx, slotIdx) {
 
 function getSlotEl(groupIdx, slotIdx) {
     return document.querySelector(`.book-slot[data-group="${groupIdx}"][data-slot="${slotIdx}"]`);
+}
+
+// ── Reorder groups ───────────────────────────────────────────────────────────
+
+function swapGroups(idxA, idxB) {
+    // Swap the state content (category + books)
+    const tmp = { ...state.groups[idxA] };
+    state.groups[idxA] = { ...state.groups[idxB] };
+    state.groups[idxB] = tmp;
+
+    // Re-render both panels' slots and category inputs
+    [idxA, idxB].forEach(g => {
+        // Update category input value
+        const input = document.querySelector(`.category-input[data-group="${g}"]`);
+        if (input) input.value = state.groups[g].category;
+
+        // Re-render all 4 slots
+        for (let s = 0; s < 4; s++) {
+            const el = getSlotEl(g, s);
+            if (el) renderSlot(el, g, s);
+        }
+    });
+
+    updateProgress();
+    updateSaveButton();
+    scheduleDraftSave();
+}
+
+function bindReorderButtons() {
+    document.querySelectorAll('.reorder-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const g     = parseInt(btn.dataset.group);
+            const isUp  = btn.classList.contains('reorder-up');
+            const other = isUp ? g - 1 : g + 1;
+            if (other < 0 || other > 3) return;
+            swapGroups(g, other);
+        });
+    });
 }
 
 // ── Category inputs ───────────────────────────────────────────────────────────
