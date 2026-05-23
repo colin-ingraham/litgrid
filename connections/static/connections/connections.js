@@ -31,6 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (PRIOR_RESULT) {
         // Already completed — restore state and show end modal immediately
         restorePriorResult(PRIOR_RESULT);
+    } else if (PROGRESS_RESULT) {
+        // Mid-game — restore progress silently and let them continue
+        restoreProgress(PROGRESS_RESULT);
+        checkFirstVisit();
     } else {
         checkFirstVisit();
     }
@@ -77,6 +81,37 @@ function restorePriorResult(prior) {
         backdrop.classList.remove('hidden');
         requestAnimationFrame(() => backdrop.classList.add('visible'));
     }, 400);
+}
+
+function restoreProgress(prog) {
+    const savedSolved       = new Set(prog.solvedGroups || []);
+    const savedPlayerSolved = new Set(prog.playerSolvedGroups || []);
+    guessHistory = prog.guessHistory || [];
+    mistakes     = prog.mistakes !== undefined ? prog.mistakes : 4;
+
+    // Reveal already-solved groups
+    savedSolved.forEach(idx => {
+        solvedGroups.add(idx);
+        revealSolvedGroup(idx);
+    });
+    savedPlayerSolved.forEach(idx => playerSolvedGroups.add(idx));
+
+    renderGrid();
+    renderMistakes();
+}
+
+function saveProgress() {
+    if (!PROGRESS_URL) return;
+    fetch(PROGRESS_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        body:    JSON.stringify({
+            solvedGroups:       [...solvedGroups],
+            playerSolvedGroups: [...playerSolvedGroups],
+            guessHistory:       guessHistory,
+            mistakes:           mistakes,
+        }),
+    }).catch(() => {});
 }
 
 function shuffleArray(arr) {
@@ -238,6 +273,8 @@ function onSubmit() {
             renderGrid();
             if (solvedGroups.size === PUZZLE_DATA.groups.length) {
                 setTimeout(() => gameOver(true), 500);
+            } else {
+                saveProgress();
             }
         }, revealDelay);
     } else {
@@ -257,7 +294,11 @@ function onSubmit() {
         setTimeout(() => {
             selected.clear();
             renderGrid();
-            if (mistakes <= 0) setTimeout(() => gameOver(false), 500);
+            if (mistakes <= 0) {
+                setTimeout(() => gameOver(false), 500);
+            } else {
+                saveProgress();
+            }
         }, 580);
     }
 }

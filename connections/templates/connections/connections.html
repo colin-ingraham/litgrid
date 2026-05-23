@@ -134,7 +134,9 @@
     const CURRENT_RANK      = {{ current_rank|default:"null" }};
     const ALL_PUZZLES       = {{ all_puzzles_json|safe }};
     const PRIOR_RESULT      = {{ prior_result_json|safe }};
+    const PROGRESS_RESULT   = {{ progress_result_json|safe }};
     const COMPLETE_URL      = "{{ complete_url }}";
+    const PROGRESS_URL      = "{{ progress_url }}";
     const CSRF_TOKEN        = document.querySelector('meta[name="csrf-token"]')?.content || '';
 </script>
 

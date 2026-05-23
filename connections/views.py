@@ -5,9 +5,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
 
-GOOGLE_BOOKS_URL  = "https://www.googleapis.com/books/v1/volumes"
-PLACEHOLDER_COVER = 'https://placehold.co/60x90/2D2D2D/C9A86A?text=N%2FA'
-SESSION_KEY       = 'connections_completed'  # { str(puzzle_id): { guessHistory, mistakes, won } }
+GOOGLE_BOOKS_URL    = "https://www.googleapis.com/books/v1/volumes"
+PLACEHOLDER_COVER   = 'https://placehold.co/60x90/2D2D2D/C9A86A?text=N%2FA'
+SESSION_COMPLETE    = 'connections_completed'   # {str(puzzle_id): {guessHistory, mistakes, won}}
+SESSION_PROGRESS    = 'connections_progress'    # {str(puzzle_id): {solvedGroups, playerSolvedGroups, guessHistory, mistakes}}
 
 
 def _fetch_cover_from_api(title, author):
@@ -74,8 +75,8 @@ def _all_puzzle_stubs(completed_ids):
 
 
 def ConnectionsGame(request, puzzle_id=None):
-    # Read completed puzzles from session
-    completed_map = request.session.get(SESSION_KEY, {})
+    completed_map = request.session.get(SESSION_COMPLETE, {})
+    progress_map  = request.session.get(SESSION_PROGRESS, {})
     completed_ids = {int(k) for k in completed_map.keys()}
 
     try:
@@ -94,13 +95,14 @@ def ConnectionsGame(request, puzzle_id=None):
             current_rank = next(
                 (p['rank'] for p in all_puzzles if p['id'] == current_id), 1
             )
-            # Prior completion data for this puzzle (if any)
-            prior = completed_map.get(str(current_id))
+            prior    = completed_map.get(str(current_id))   # fully done
+            progress = progress_map.get(str(current_id))    # mid-game
         else:
             puzzle_data  = None
             current_id   = None
             current_rank = None
             prior        = None
+            progress     = None
 
     except Exception:
         puzzle_data  = None
@@ -108,14 +110,17 @@ def ConnectionsGame(request, puzzle_id=None):
         current_rank = None
         all_puzzles  = []
         prior        = None
+        progress     = None
 
     context = {
-        'puzzle_data_json':   json.dumps(puzzle_data) if puzzle_data else 'null',
-        'current_puzzle_id':  current_id,
-        'current_rank':       current_rank,
-        'all_puzzles_json':   json.dumps(all_puzzles),
-        'prior_result_json':  json.dumps(prior) if prior else 'null',
-        'complete_url':       f'/connections/api/complete/{current_id}/' if current_id else '',
+        'puzzle_data_json':    json.dumps(puzzle_data) if puzzle_data else 'null',
+        'current_puzzle_id':   current_id,
+        'current_rank':        current_rank,
+        'all_puzzles_json':    json.dumps(all_puzzles),
+        'prior_result_json':   json.dumps(prior)    if prior    else 'null',
+        'progress_result_json': json.dumps(progress) if progress else 'null',
+        'complete_url':        f'/connections/api/complete/{current_id}/'  if current_id else '',
+        'progress_url':        f'/connections/api/progress/{current_id}/'  if current_id else '',
     }
     return render(request, 'connections/connections.html', context)
 
@@ -127,12 +132,38 @@ def save_completion(request, puzzle_id):
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
 
-    completed_map = request.session.get(SESSION_KEY, {})
+    # Write to completed
+    completed_map = request.session.get(SESSION_COMPLETE, {})
     completed_map[str(puzzle_id)] = {
         'guessHistory': data.get('guessHistory', []),
         'mistakes':     data.get('mistakes', 0),
         'won':          data.get('won', False),
     }
-    request.session[SESSION_KEY] = completed_map
-    request.session.modified     = True
+    request.session[SESSION_COMPLETE] = completed_map
+
+    # Clear in-progress entry — no longer needed
+    progress_map = request.session.get(SESSION_PROGRESS, {})
+    progress_map.pop(str(puzzle_id), None)
+    request.session[SESSION_PROGRESS] = progress_map
+
+    request.session.modified = True
+    return JsonResponse({'success': True})
+
+
+@require_POST
+def save_progress(request, puzzle_id):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
+
+    progress_map = request.session.get(SESSION_PROGRESS, {})
+    progress_map[str(puzzle_id)] = {
+        'solvedGroups':       data.get('solvedGroups', []),
+        'playerSolvedGroups': data.get('playerSolvedGroups', []),
+        'guessHistory':       data.get('guessHistory', []),
+        'mistakes':           data.get('mistakes', 4),
+    }
+    request.session[SESSION_PROGRESS] = progress_map
+    request.session.modified = True
     return JsonResponse({'success': True})
