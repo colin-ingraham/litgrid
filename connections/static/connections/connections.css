@@ -679,6 +679,12 @@ body.connections-page {
     pointer-events: none;
 }
 
+.archive-item--done .archive-status {
+    color: var(--dash-success, #6aaa64);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
 /* ══════════════════════════════════════════════════════
    NO PUZZLE STATE
    ══════════════════════════════════════════════════════ */

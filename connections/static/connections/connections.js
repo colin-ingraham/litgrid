@@ -26,8 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
     renderGrid();
     renderMistakes();
     bindControls();
-    checkFirstVisit();
     buildArchiveList();
+
+    if (PRIOR_RESULT) {
+        // Already completed — restore state and show end modal immediately
+        restorePriorResult(PRIOR_RESULT);
+    } else {
+        checkFirstVisit();
+    }
 });
 
 function buildTiles() {
@@ -42,6 +48,35 @@ function buildTiles() {
             });
         });
     });
+}
+
+function restorePriorResult(prior) {
+    // Replay guess history into state so share works correctly
+    guessHistory = prior.guessHistory || [];
+    mistakes     = 4 - (prior.mistakes || 0);
+
+    // Mark all groups as solved so the grid renders empty
+    PUZZLE_DATA.groups.forEach((_, idx) => {
+        solvedGroups.add(idx);
+        if (prior.won) playerSolvedGroups.add(idx);
+    });
+
+    isGameOver = true;
+
+    // Reveal all solved group rows
+    PUZZLE_DATA.groups.forEach((_, idx) => revealSolvedGroup(idx));
+    renderGrid();
+    renderMistakes();
+
+    // Show end modal after a short delay
+    setTimeout(() => {
+        document.getElementById('end-title').textContent = prior.won ? 'Well Read!' : 'Better Luck Next Time';
+        buildEndSummary();
+        buildOtherPuzzleLinks();
+        const backdrop = document.getElementById('end-modal-backdrop');
+        backdrop.classList.remove('hidden');
+        requestAnimationFrame(() => backdrop.classList.add('visible'));
+    }, 400);
 }
 
 function shuffleArray(arr) {
@@ -259,6 +294,20 @@ function gameOver(won) {
         });
         renderGrid();
     }
+
+    // Save to session
+    if (COMPLETE_URL) {
+        fetch(COMPLETE_URL, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+            body:    JSON.stringify({
+                guessHistory: guessHistory,
+                mistakes:     4 - mistakes,
+                won:          won,
+            }),
+        }).catch(() => {});  // silent fail — session save isn't critical
+    }
+
     setTimeout(() => {
         document.getElementById('end-title').textContent = won ? 'Well Read!' : 'Better Luck Next Time';
         buildEndSummary();
@@ -325,11 +374,15 @@ function buildArchiveList() {
     if (!container || !ALL_PUZZLES.length) return;
 
     container.innerHTML = ALL_PUZZLES.map(p => {
-        const isCurrent = p.id === CURRENT_PUZZLE_ID;
+        const isCurrent   = p.id === CURRENT_PUZZLE_ID;
+        const isCompleted = p.completed;
         return `
-            <a href="/connections/${p.id}/" class="archive-item${isCurrent ? ' archive-item--current' : ''}">
+            <a href="/connections/${p.id}/" class="archive-item${isCurrent ? ' archive-item--current' : ''}${isCompleted ? ' archive-item--done' : ''}">
                 <span class="archive-date">Puzzle #${p.rank}</span>
-                ${isCurrent ? '<span class="archive-status">Current</span>' : ''}
+                <span class="archive-status">
+                    ${isCurrent ? 'Current' : ''}
+                    ${isCompleted && !isCurrent ? '✓' : ''}
+                </span>
             </a>
         `;
     }).join('');
