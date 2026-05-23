@@ -94,10 +94,13 @@
 <div class="connections-wrapper">
     <div id="solved-groups-container"></div>
     <div id="connections-grid" class="connections-grid"></div>
-    <div class="connections-controls">
+    <div class="connections-controls" id="game-controls">
         <button id="shuffle-btn"  class="ctrl-btn">Shuffle</button>
         <button id="deselect-btn" class="ctrl-btn" disabled>Deselect All</button>
         <button id="submit-btn"   class="ctrl-btn submit-btn" disabled>Submit</button>
+    </div>
+    <div class="connections-controls hidden" id="results-controls">
+        <button id="view-results-btn" class="ctrl-btn submit-btn">View Results</button>
     </div>
 </div>
 
@@ -110,8 +113,8 @@
             <div id="end-group-summary" class="end-group-summary"></div>
             <div class="end-footer">
                 <div class="timer-container">
-                    <p class="timer-label">Play another</p>
-                    <div id="other-puzzles-links" class="other-puzzles-links"></div>
+                    <p class="timer-label">Archives</p>
+                    <button id="open-archive-from-end-btn" class="archive-from-end-btn">Browse Puzzles</button>
                 </div>
                 <button id="share-btn" class="share-button">
                     Share <span class="share-icon">➤</span>

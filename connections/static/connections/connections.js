@@ -70,9 +70,9 @@ function restorePriorResult(prior) {
 
     // Show end modal after a short delay
     setTimeout(() => {
+        swapToResultsControls();
         document.getElementById('end-title').textContent = prior.won ? 'Well Read!' : 'Better Luck Next Time';
         buildEndSummary();
-        buildOtherPuzzleLinks();
         const backdrop = document.getElementById('end-modal-backdrop');
         backdrop.classList.remove('hidden');
         requestAnimationFrame(() => backdrop.classList.add('visible'));
@@ -129,6 +129,17 @@ function updateControls() {
     document.getElementById('deselect-btn').disabled = selected.size === 0;
 }
 
+function swapToResultsControls() {
+    document.getElementById('game-controls').classList.add('hidden');
+    const rc = document.getElementById('results-controls');
+    rc.classList.remove('hidden');
+    rc.querySelector('#view-results-btn').addEventListener('click', () => {
+        const backdrop = document.getElementById('end-modal-backdrop');
+        backdrop.classList.remove('hidden');
+        requestAnimationFrame(() => backdrop.classList.add('visible'));
+    });
+}
+
 // --- Tile interaction ---
 function onTileClick(id) {
     if (isGameOver) return;
@@ -172,6 +183,10 @@ function bindControls() {
     document.getElementById('share-btn').addEventListener('click', shareResult);
     document.getElementById('end-modal-backdrop').addEventListener('click', e => {
         if (e.target.id === 'end-modal-backdrop') hideEndModal();
+    });
+    document.getElementById('open-archive-from-end-btn').addEventListener('click', () => {
+        hideEndModal();
+        setTimeout(showArchive, 320);
     });
 }
 
@@ -309,9 +324,9 @@ function gameOver(won) {
     }
 
     setTimeout(() => {
+        swapToResultsControls();
         document.getElementById('end-title').textContent = won ? 'Well Read!' : 'Better Luck Next Time';
         buildEndSummary();
-        buildOtherPuzzleLinks();
         const backdrop = document.getElementById('end-modal-backdrop');
         backdrop.classList.remove('hidden');
         requestAnimationFrame(() => backdrop.classList.add('visible'));
@@ -348,19 +363,6 @@ function buildEndSummary() {
     });
 }
 
-function buildOtherPuzzleLinks() {
-    const container = document.getElementById('other-puzzles-links');
-    if (!container || !ALL_PUZZLES.length) return;
-
-    const others = ALL_PUZZLES.filter(p => p.id !== CURRENT_PUZZLE_ID);
-    if (!others.length) {
-        container.innerHTML = '<span style="font-size:0.8rem; opacity:0.5;">No other puzzles yet.</span>';
-        return;
-    }
-    container.innerHTML = others.map(p =>
-        `<a href="/connections/${p.id}/" class="other-puzzle-link">Puzzle #${p.rank}</a>`
-    ).join('');
-}
 
 function hideEndModal() {
     const backdrop = document.getElementById('end-modal-backdrop');

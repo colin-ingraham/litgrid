@@ -587,25 +587,23 @@ body.connections-page {
     margin: 0 0 6px;
 }
 
-.other-puzzles-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.other-puzzle-link {
+.archive-from-end-btn {
+    background: transparent;
+    border: 1px solid rgba(201, 168, 106, 0.3);
+    color: var(--primary-gold);
     font-family: 'DM Mono', monospace;
     font-size: 0.72rem;
     font-weight: 500;
-    color: var(--primary-gold);
-    text-decoration: none;
-    border: 1px solid rgba(201, 168, 106, 0.25);
-    padding: 4px 10px;
-    border-radius: 5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
     transition: all 0.15s ease;
+    margin-top: 2px;
 }
 
-.other-puzzle-link:hover {
+.archive-from-end-btn:hover {
     background: rgba(201, 168, 106, 0.1);
     border-color: var(--primary-gold);
 }
