@@ -152,6 +152,95 @@ def delete_draft(request, draft_id):
     return JsonResponse({'success': True})
 
 
+
+# ── Edit published puzzle ─────────────────────────────────────────────────────
+
+@login_required
+def edit_puzzle(request, puzzle_id):
+    puzzle = get_object_or_404(ConnectionsPuzzle, pk=puzzle_id)
+
+    groups = []
+    for group in puzzle.groups.prefetch_related('books__book__author'):
+        books = []
+        for entry in group.books.all():
+            b = entry.book
+            cover = (getattr(b, 'cover_override', None) or b.thumbnail_url or '')
+            books.append({
+                'id':             b.google_book_id,
+                'title':          b.title,
+                'author':         b.author.name if b.author else 'Unknown',
+                'cover':          cover.replace('http://', 'https://'),
+                'cover_override': getattr(b, 'cover_override', '') or '',
+            })
+        groups.append({'category': group.category, 'books': books})
+
+    all_ids = list(ConnectionsPuzzle.objects.order_by('id').values_list('id', flat=True))
+    rank    = (all_ids.index(puzzle_id) + 1) if puzzle_id in all_ids else puzzle_id
+
+    context = {
+        'draft_id':          None,
+        'draft_data_json':   json.dumps({'groups': groups}),
+        'difficulty_levels': DIFFICULTY_LEVELS,
+        'book_search_url':   '/api/book-search/',
+        'edit_puzzle_id':    puzzle_id,
+        'edit_puzzle_rank':  rank,
+    }
+    return render(request, 'dashboard/create_connections.html', context)
+
+
+@login_required
+@require_POST
+def update_connections_puzzle(request, puzzle_id):
+    puzzle = get_object_or_404(ConnectionsPuzzle, pk=puzzle_id)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
+
+    groups_data = data.get('groups', [])
+
+    if len(groups_data) != 4:
+        return JsonResponse({'success': False, 'error': 'Puzzle must have exactly 4 groups.'}, status=400)
+
+    for i, g in enumerate(groups_data, start=1):
+        if not g.get('category', '').strip():
+            return JsonResponse({'success': False, 'error': f'Group {i} is missing a category name.'}, status=400)
+        if len(g.get('books', [])) != 4 or any(b is None for b in g['books']):
+            return JsonResponse({'success': False, 'error': f'Group {i} must have exactly 4 books.'}, status=400)
+
+    resolved = []
+    for group_data in groups_data:
+        group_books = []
+        for book_data in group_data['books']:
+            book, error = _get_or_fetch_book(book_data['id'])
+            if error:
+                return JsonResponse({'success': False, 'error': error}, status=400)
+            group_books.append(book)
+        resolved.append(group_books)
+
+    try:
+        with transaction.atomic():
+            puzzle.groups.all().delete()
+            for order, (group_data, books) in enumerate(zip(groups_data, resolved)):
+                group = ConnectionsGroup.objects.create(
+                    puzzle=puzzle,
+                    category=group_data['category'].strip(),
+                    difficulty=order + 1,
+                    order=order,
+                )
+                for slot, (book_data, book) in enumerate(zip(group_data['books'], books)):
+                    ConnectionsBookEntry.objects.create(group=group, book=book, slot=slot)
+                    override = (book_data.get('cover_override') or '').strip()
+                    if override and override != getattr(book, 'cover_override', None):
+                        Book.objects.filter(pk=book.pk).update(cover_override=override)
+            puzzle.save()
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+    return JsonResponse({'success': True, 'puzzle_id': puzzle.id})
+
+
 # ── Puzzle save ───────────────────────────────────────────────────────────────
 
 @login_required

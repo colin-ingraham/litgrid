@@ -61,6 +61,7 @@ let draftSaveInFlight = false;  // prevents duplicate creates on fast typing
 let draftSavePending  = false;  // queues a save that arrived while one was in-flight
 
 function scheduleDraftSave() {
+    if (IS_EDIT_MODE) return;
     clearTimeout(draftSaveTimer);
     draftSaveTimer = setTimeout(persistDraft, 800);
 }
@@ -407,9 +408,12 @@ async function publishPuzzle() {
         const data = await resp.json();
 
         if (data.success) {
-            setStatus('success', '✓ Published!');
+            if (!IS_EDIT_MODE) clearDraft();
+            setStatus('success', IS_EDIT_MODE ? '✓ Saved!' : '✓ Published!');
             setTimeout(() => {
-                window.location.href = `/connections/${data.puzzle_number}/`;
+                window.location.href = IS_EDIT_MODE
+                    ? '/dashboard/'
+                    : `/connections/${data.puzzle_number}/`;
             }, 900);
         } else {
             setStatus('error', 'Error');

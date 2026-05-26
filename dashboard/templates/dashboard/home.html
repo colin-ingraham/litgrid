@@ -77,6 +77,7 @@
             <span class="puzzle-created">{{ puzzle.created_at|date:"M d, Y" }}</span>
             <span class="puzzle-actions">
                 <a href="/connections/{{ puzzle.id }}/" class="table-link">Play</a>
+                <a href="{% url 'dashboard:edit_puzzle' puzzle.id %}" class="table-link">Edit</a>
             </span>
         </div>
         {% endfor %}

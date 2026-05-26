@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{% if draft_id %}Edit Draft{% else %}New Connections Puzzle{% endif %}{% endblock %}
+{% block title %}{% if edit_puzzle_id %}Edit Puzzle #{{ edit_puzzle_rank }}{% elif draft_id %}Edit Draft{% else %}New Connections Puzzle{% endif %}{% endblock %}
 {% block nav_connections %}active{% endblock %}
 
 {% block extra_css %}
@@ -17,11 +17,11 @@
         Dashboard
     </a>
     <div class="topbar-center">
-        <h1 class="topbar-title">{% if draft_id %}Edit Draft{% else %}New Connections Puzzle{% endif %}</h1>
+        <h1 class="topbar-title">{% if edit_puzzle_id %}Edit Puzzle #{{ edit_puzzle_rank }}{% elif draft_id %}Edit Draft{% else %}New Connections Puzzle{% endif %}</h1>
     </div>
     <div class="topbar-actions">
         <span id="save-status" class="save-status"></span>
-        <button id="save-btn" class="btn btn--gold" disabled>Publish Puzzle</button>
+        <button id="save-btn" class="btn btn--gold" disabled>{% if edit_puzzle_id %}Save Changes{% else %}Publish Puzzle{% endif %}</button>
     </div>
 </div>
 
@@ -89,12 +89,13 @@
 
 {% csrf_token %}
 <script>
-    const BOOK_SEARCH_URL = "{{ book_search_url }}";
-    const SAVE_URL        = "{% url 'dashboard:save_puzzle' %}";
-    const DRAFT_SAVE_URL  = "{% url 'dashboard:save_draft' %}";
-    const CSRF_TOKEN      = document.querySelector('meta[name="csrf-token"]').content;
+    const BOOK_SEARCH_URL    = "{{ book_search_url }}";
+    const SAVE_URL           = "{% if edit_puzzle_id %}{% url 'dashboard:update_puzzle' edit_puzzle_id %}{% else %}{% url 'dashboard:save_puzzle' %}{% endif %}";
+    const DRAFT_SAVE_URL     = "{% url 'dashboard:save_draft' %}";
+    const CSRF_TOKEN         = document.querySelector('meta[name="csrf-token"]').content;
     const INITIAL_DRAFT_ID   = {{ draft_id|default:"null" }};
     const INITIAL_DRAFT_DATA = {{ draft_data_json|safe }};
+    const IS_EDIT_MODE       = {{ edit_puzzle_id|yesno:"true,false" }};
 </script>
 
 {% endblock %}
