@@ -16,4 +16,7 @@ db.sqlite3
 Thumbs.db
 
 # Security
-/config/settings/local.py # If you use separate local settings
+/config/settings/local.py
+
+# Generated static files
+staticfiles/
