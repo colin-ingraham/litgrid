@@ -276,6 +276,7 @@
     background: var(--dash-surface);
     cursor: default;
     padding: 8px 6px 6px;
+    position: relative;
 }
 
 .slot-filled-inner {
@@ -598,4 +599,83 @@
 .reorder-btn:disabled {
     opacity: 0.2;
     cursor: not-allowed;
+}
+
+/* ── Cover override UI ── */
+.slot-cover-edit-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(13, 13, 13, 0.75);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--dash-muted);
+    font-size: 0.7rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    padding: 0;
+    z-index: 2;
+}
+
+.slot-cover-edit-btn:hover {
+    background: rgba(201, 168, 106, 0.2);
+    border-color: var(--dash-gold);
+    color: var(--dash-gold);
+}
+
+.slot-cover-override-row {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 4px;
+    padding: 5px;
+    background: rgba(13,13,13,0.92);
+    border-top: 1px solid var(--dash-border);
+    z-index: 3;
+}
+
+.slot-cover-override-row.hidden {
+    display: none !important;
+}
+
+.slot-cover-url-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--dash-border);
+    border-radius: 4px;
+    padding: 4px 7px;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--dash-text);
+    outline: none;
+    min-width: 0;
+}
+
+.slot-cover-url-input:focus {
+    border-color: var(--dash-gold);
+}
+
+.slot-cover-url-save {
+    background: var(--dash-gold);
+    border: none;
+    border-radius: 4px;
+    color: #1a1208;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.slot-cover-url-save:hover {
+    background: #d9b87a;
 }

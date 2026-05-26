@@ -205,8 +205,12 @@ def save_connections_puzzle(request):
                     difficulty=order + 1,
                     order=order,
                 )
-                for slot, book in enumerate(books):
+                for slot, (book_data, book) in enumerate(zip(group_data['books'], books)):
                     ConnectionsBookEntry.objects.create(group=group, book=book, slot=slot)
+                    # Apply cover override if the editor set one
+                    override = (book_data.get('cover_override') or '').strip()
+                    if override and override != getattr(book, 'cover_override', None):
+                        Book.objects.filter(pk=book.pk).update(cover_override=override)
 
             # Delete the draft now that it's been published
             if draft_id:

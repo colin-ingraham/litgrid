@@ -50,6 +50,10 @@ class Book(models.Model):
     publish_year = models.IntegerField(null=True, blank=True)
     page_count = models.IntegerField(null=True, blank=True)
     thumbnail_url = models.URLField(max_length=500, null=True, blank=True)
+    cover_override = models.URLField(
+        max_length=500, null=True, blank=True,
+        help_text="Manually set cover URL — takes priority over all automatic sources."
+    )
     isbn = models.CharField(max_length=13, null=True, blank=True) 
 
     # Link to Subject model (for War, Historical Fiction categories)

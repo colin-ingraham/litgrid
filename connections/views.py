@@ -37,8 +37,14 @@ def _puzzle_to_json(puzzle):
     for group in puzzle.groups.prefetch_related('books__book__author'):
         books = []
         for entry in group.books.all():
-            b     = entry.book
-            thumb = (b.thumbnail_url or '').replace('http://', 'https://')
+            b = entry.book
+            # Priority: cover_override > thumbnail_url > API fetch > placeholder
+            thumb = (
+                getattr(b, 'cover_override', None)
+                or b.thumbnail_url
+                or ''
+            )
+            thumb = thumb.replace('http://', 'https://')
             if not thumb:
                 thumb = _fetch_cover_from_api(b.title, b.author.name if b.author else '')
             books.append({

@@ -141,12 +141,14 @@ function renderSlot(el, groupIdx, slotIdx) {
         el.addEventListener('click', el._slotClickHandler);
     } else {
         el.className = 'book-slot filled';
+        const coverSrc = book.cover_override || book.cover;
         el.innerHTML = `
             <button class="slot-clear-btn" aria-label="Remove ${book.title}" data-group="${groupIdx}" data-slot="${slotIdx}">×</button>
+            <button class="slot-cover-edit-btn" title="Override cover URL" data-group="${groupIdx}" data-slot="${slotIdx}">✎</button>
             <div class="slot-filled-inner">
                 <img
                     class="slot-cover"
-                    src="${book.cover}"
+                    src="${coverSrc}"
                     alt="${book.title}"
                     draggable="false"
                     onerror="this.classList.add('missing')"
@@ -154,10 +156,44 @@ function renderSlot(el, groupIdx, slotIdx) {
                 <span class="slot-title">${book.title}</span>
                 <span class="slot-author">${book.author}</span>
             </div>
+            <div class="slot-cover-override-row hidden">
+                <input
+                    type="url"
+                    class="slot-cover-url-input"
+                    placeholder="Paste cover URL…"
+                    value="${book.cover_override || ''}"
+                    data-group="${groupIdx}"
+                    data-slot="${slotIdx}"
+                />
+                <button class="slot-cover-url-save" data-group="${groupIdx}" data-slot="${slotIdx}">✓</button>
+            </div>
         `;
         el.querySelector('.slot-clear-btn').addEventListener('click', e => {
             e.stopPropagation();
             clearSlot(groupIdx, slotIdx);
+        });
+        el.querySelector('.slot-cover-edit-btn').addEventListener('click', e => {
+            e.stopPropagation();
+            const row = el.querySelector('.slot-cover-override-row');
+            row.classList.toggle('hidden');
+            if (!row.classList.contains('hidden')) {
+                el.querySelector('.slot-cover-url-input').focus();
+            }
+        });
+        el.querySelector('.slot-cover-url-save').addEventListener('click', e => {
+            e.stopPropagation();
+            const input    = el.querySelector('.slot-cover-url-input');
+            const newCover = input.value.trim();
+            state.groups[groupIdx].books[slotIdx].cover_override = newCover;
+            // Update the preview image immediately
+            const img = el.querySelector('.slot-cover');
+            if (newCover) img.src = newCover;
+            el.querySelector('.slot-cover-override-row').classList.add('hidden');
+            scheduleDraftSave();
+        });
+        el.querySelector('.slot-cover-url-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') el.querySelector('.slot-cover-url-save').click();
+            if (e.key === 'Escape') el.querySelector('.slot-cover-override-row').classList.add('hidden');
         });
     }
 }
