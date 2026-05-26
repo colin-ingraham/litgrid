@@ -1,5 +1,6 @@
 LITGRID CONNECTIONS TODO:
-
+- Clicking on Litgrid Connections vs reloading the page raw takes you to different puzzle
+- Put most recent puzzles at the top of the list
 
 - Get the website published??
 

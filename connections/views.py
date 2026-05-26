@@ -62,7 +62,9 @@ def _all_puzzle_stubs(completed_ids):
             .order_by('id')
             .values_list('id', flat=True)
         )
-        return [
+        total = len(ids)
+        # rank is chronological (oldest = #1), display order is newest first
+        stubs = [
             {
                 'id':        pid,
                 'rank':      rank,
@@ -70,6 +72,8 @@ def _all_puzzle_stubs(completed_ids):
             }
             for rank, pid in enumerate(ids, start=1)
         ]
+        stubs.reverse()
+        return stubs
     except Exception:
         return []
 
@@ -87,7 +91,7 @@ def ConnectionsGame(request, puzzle_id=None):
         if puzzle_id is not None:
             puzzle = get_object_or_404(ConnectionsPuzzle, pk=puzzle_id)
         else:
-            puzzle = ConnectionsPuzzle.objects.order_by('id').first()
+            puzzle = ConnectionsPuzzle.objects.order_by('-id').first()
 
         if puzzle:
             puzzle_data  = _puzzle_to_json(puzzle)
