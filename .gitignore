@@ -18,5 +18,3 @@ Thumbs.db
 # Security
 /config/settings/local.py
 
-# Generated static files
-staticfiles/

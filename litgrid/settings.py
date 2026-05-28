@@ -76,3 +76,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GOOGLE_BOOKS_API_KEY = config('GOOGLE_BOOKS_API_KEY', default='')
+
+CSRF_TRUSTED_ORIGINS = ['https://playlitgrid.com', 'https://www.playlitgrid.com']
