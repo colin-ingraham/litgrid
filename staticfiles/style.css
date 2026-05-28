@@ -1,0 +1,974 @@
+/* --- Variables & Base Styles --- */
+:root {
+    --primary-black: #101010; 
+    --primary-gold: #C9A86A;
+    --primary-charcoal: #2D2D2D;
+    --primary-beige: #E8DCC4;
+    --success-green: #2ecc71; 
+    --error-red: #e74c3c;     
+    --cell-border-radius: 6px; /* Slightly smaller radius for sharpness */
+    --shadow-light: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-heavy: 0 10px 20px rgba(0, 0, 0, 0.6);
+}
+
+body {
+    font-family: 'Inter', sans-serif, Arial, sans-serif;
+    background-color: var(--primary-black);
+    color: var(--primary-beige);
+    margin: 0;
+    padding: 10px; /* Reduced padding to give grid more room */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh; /* Force body to fill viewport height */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* --- Header Styling --- */
+.game-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.header-title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--primary-gold);
+    text-shadow: 0 0 15px rgba(201, 168, 106, 0.6);
+    letter-spacing: 3px;
+    margin: 0;
+}
+
+.header-subtitle {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+    font-weight: 400;
+    color: var(--primary-beige);
+    margin-top: 5px;
+}
+
+/* --- Game Status Bar --- */
+.game-info-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 20px;
+    background-color: var(--primary-charcoal);
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    flex-grow: 1; 
+    max-width: 500px;
+    margin-bottom: 0;
+}
+
+.side-icons {
+    display: flex;
+    gap: 10px; /* Space between multiple icons if you add more */
+    flex-shrink: 0; /* Prevents icons from getting squished */
+}
+
+.stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-gold);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-beige);
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+
+/* --- Grid Layout --- */
+.container {
+display: grid;
+    
+    /* Columns: First is 0.8 fraction, rest are equal fractions */
+    grid-template-columns: 0.8fr repeat(3, minmax(0, 1fr)); 
+    
+    /* Rows: Header is auto, remaining 3 split the fixed height equally */
+    grid-template-rows: auto repeat(3, minmax(0, 1fr)); 
+    
+    gap: 12px;
+    width: 90%;
+    height: 65vh; 
+    /* Safety constraints */
+    min-height: 400px; 
+    max-height: 800px;
+    
+    margin: 0;
+}
+
+/* --- Grid Cell Base Styling --- */
+.grid-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* REMOVED: min-height: 100px; -> Let the grid rows dictate height */
+    height: 100%; 
+    width: 100%;
+    
+    border-radius: var(--cell-border-radius);
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--primary-charcoal); /* Softer border */
+}
+
+.blank-cell {
+    visibility: hidden; 
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    pointer-events: none;
+}
+
+/* --- Header Cell Styling --- */
+.row-header, .col-header {
+    background: linear-gradient(145deg, #A8865C, var(--primary-gold)); 
+    color: var(--primary-black);
+    font-weight: 800;
+    /* Larger text for headers */
+    font-size: clamp(0.9rem, 1.8vw, 1.3rem); 
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.header-text {
+    margin: 0;
+}
+
+/* --- Input Cell Styling --- */
+.input-box {
+    background-color: var(--primary-charcoal); 
+    cursor: pointer;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    color: var(--primary-beige); 
+}
+
+.input-box:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(201, 168, 106, 0.4), inset 0 0 15px rgba(201, 168, 106, 0.2);
+    border-color: var(--primary-gold);
+}
+
+.placeholder-text {
+    /* Make the "Click to Guess" text larger and clearer */
+    font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+    color: rgba(232, 220, 196, 0.3);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- SOLVED CELL STYLING (New) --- */
+
+.solved-correctly {
+    padding: 6px !important; 
+    background-color: var(--primary-charcoal); 
+    box-shadow: 0 0 8px rgba(201, 168, 106, 0.4), inset 0 0 10px rgba(201, 168, 106, 0.1); 
+    border: 2px solid var(--primary-gold);
+    cursor: default; 
+}
+
+.book-result-final {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; 
+    height: 100%;
+    width: 100%;
+    gap: 2px; /* Tighter gap to fit everything */
+}
+
+.final-book-cover {
+    /* Reduced height slightly (70% -> 60%) to make room for Title + Author */
+    height: 60%; 
+    width: auto; 
+    max-width: 100%;
+    object-fit: contain; 
+    border-radius: 3px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); 
+    margin-bottom: 2px;
+}
+
+.final-book-title {
+    /* Increased font size for better readability */
+    font-size: clamp(0.75rem, 1.3vw, 0.95rem);
+    font-weight: 700;
+    color: var(--primary-beige);
+    margin: 5px 0px 0px 0px;
+    line-height: 1.1;
+    text-align: center;
+    
+    /* Handle long titles gracefully */
+    display: -webkit-box;
+    line-clamp: 2; /* Standard */
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.final-book-author {
+    font-size: clamp(0.65rem, 1.1vw, 0.8rem);
+    font-weight: 400;
+    color: var(--primary-gold); /* Gold color for author */
+    margin: 0;
+    line-height: 1.1;
+    text-align: center;
+    
+    /* Limit author to 1 line to save space */
+    display: -webkit-box;
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.solved-correctly:hover .final-book-cover {
+    transform: scale(1.05);
+}
+
+
+/* --- INCORRECT GUESS STYLING (Adjusted) --- */
+.incorrect-guess {
+    background-color: var(--error-red) !important;
+    border-color: var(--error-red) !important;
+    box-shadow: 0 0 5px var(--error-red), inset 0 0 3px rgba(0, 0, 0, 0.3) !important;
+    color: white !important;
+}
+.incorrect-guess .book-title {
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    font-weight: bold;
+    margin: 0;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* --- Modal Styles (No Change) --- */
+#modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+/* FIX: Ensure the hidden class also disables pointer events */
+.hidden {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+#modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#modal-container {
+    background-color: var(--primary-charcoal);
+    padding: 30px;
+    max-width: 650px;
+    width: 95%;
+    border-radius: 15px;
+    border: 3px solid var(--primary-gold);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(201, 168, 106, 0.5);
+    transform: translateY(20px);
+    transition: transform 0.3s ease-out;
+}
+
+#modal-backdrop.visible #modal-container {
+    transform: translateY(0);
+}
+
+.modal-title {
+    color: var(--primary-gold);
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 5px;
+}
+
+.modal-coords-text {
+    text-align: center;
+    color: var(--primary-beige);
+    margin-bottom: 20px;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+#book-input {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border: 2px solid var(--primary-gold);
+    border-radius: 8px;
+    font-size: 1.1em;
+    background-color: var(--primary-black);
+    color: var(--primary-beige);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+    outline: none;
+}
+
+#book-input::placeholder {
+    color: rgba(232, 220, 196, 0.6);
+}
+
+.search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding-right: 5px; 
+}
+
+/* Individual Search Result Item */
+.book-result-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: var(--primary-black);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+    border: 1px solid var(--primary-charcoal);
+}
+
+.book-result-item:hover {
+    background-color: rgba(201, 168, 106, 0.1);
+    transform: translateX(5px);
+    border-left: 5px solid var(--primary-gold); 
+    border-color: var(--primary-gold);
+}
+
+.book-cover-thumbnail {
+    width: 55px; 
+    height: 80px;
+    object-fit: cover;
+    margin-right: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+.book-info {
+    flex-grow: 1;
+}
+
+.book-title-result {
+    /* Ensure the book titles in the results are readable */
+    font-size: clamp(0.8rem, 1.2vw, 1rem); 
+}
+
+.book-author-result {
+    font-size: 0.9rem;
+    color: var(--primary-gold);
+    margin: 2px 0 0 0;
+}
+
+.close-button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-gold);
+    color: var(--primary-black);
+    font-weight: 800;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.close-button:hover {
+    background-color: #f0c978; 
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+
+.game-board-wrapper {
+    position: relative; /* Anchors the button */
+    width: 95%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.action-button {
+    background-color: transparent;
+    color: var(--error-red); /* Default to Red (Give Up style) */
+    border: 2px solid var(--error-red);
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#end-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85); /* Slightly transparent */
+    z-index: 2000; /* Higher than search modal */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(5px); /* Nice blur effect on background */
+}
+
+#end-modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#end-modal-container {
+    background-color: var(--primary-black);
+    padding: 40px;
+    max-width: 400px;
+    width: 90%;
+    border-radius: 12px;
+    border: 1px solid var(--primary-charcoal);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+    position: relative;
+    text-align: center;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+#end-modal-backdrop.visible #end-modal-container {
+    transform: translateY(0);
+}
+
+.end-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 25px 0;
+    color: var(--primary-beige);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- Archive Modal Styling --- */
+#archive-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 2500; /* Between Game and Help modal */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(3px);
+}
+
+#archive-modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#archive-modal-container {
+    background-color: var(--primary-black);
+    border: 2px solid var(--primary-charcoal);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    height: 70vh; /* Fixed height for scrolling */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,1);
+    transform: translateY(10px);
+    transition: transform 0.2s ease;
+}
+
+#archive-modal-backdrop.visible #archive-modal-container {
+    transform: translateY(0);
+}
+
+.archive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--primary-charcoal);
+}
+
+.archive-title {
+    color: var(--primary-gold);
+    margin: 0;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* The scrollable list area */
+.archive-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* Individual Puzzle Link */
+.archive-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 8px;
+    background-color: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    color: var(--primary-beige);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.archive-item:hover {
+    background-color: rgba(201, 168, 106, 0.1);
+    border-color: var(--primary-gold);
+    transform: translateX(5px);
+}
+
+.archive-date {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.archive-status {
+    font-size: 0.8rem;
+    color: var(--primary-gold);
+    opacity: 0.7;
+}
+/* --- Summary Grid (The 3x3 Boxes) --- */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 150px; /* Fixed small size for the summary */
+    margin: 0 auto 30px auto;
+}
+
+.summary-cell {
+    width: 100%;
+    aspect-ratio: 1; /* Keeps them square */
+    border-radius: 4px;
+}
+
+.summary-correct {
+    background-color: var(--primary-gold); /* Or your success green if preferred */
+    box-shadow: 0 0 5px rgba(201, 168, 106, 0.5);
+}
+
+.summary-incorrect {
+    background-color: var(--primary-charcoal);
+    border: 1px solid #444;
+}
+
+/* --- Footer Area (Timer & Share) --- */
+.end-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--primary-charcoal);
+    padding-top: 20px;
+    margin-bottom: 20px;
+}
+
+.timer-container {
+    text-align: left;
+}
+
+.timer-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--primary-beige);
+    opacity: 0.7;
+}
+
+.timer-value {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin: 0;
+    font-variant-numeric: tabular-nums; /* Prevents numbers from jumping */
+}
+
+.share-button {
+    background-color: var(--success-green);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.share-button:hover {
+    transform: scale(1.05);
+    background-color: #27ae60;
+}
+
+/* --- Back to Puzzle Button --- */
+.back-link {
+    background: none;
+    border: none;
+    color: var(--primary-gold);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.back-link:hover {
+    opacity: 1;
+}
+
+/* --- Close 'X' Button --- */
+.icon-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--primary-charcoal);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+.icon-close-btn:hover {
+    color: var(--primary-beige);
+}
+
+#see-results-btn {
+    color: var(--primary-gold);
+    border-color: var(--primary-gold);
+}
+
+#see-results-btn:hover {
+    background-color: var(--primary-gold);
+    color: var(--primary-black);
+}
+
+#archives-btn {
+    color: var(--primary-beige);
+    border-color: var(--primary-beige);
+    opacity: 0.8;
+}
+
+#archives-btn:hover {
+    background-color: var(--primary-beige);
+    color: var(--primary-black);
+    opacity: 1;
+}
+
+/* --- Post-Game Container (Centered Below Grid) --- */
+.post-game-container {
+    /* Remove absolute positioning to let it sit naturally below */
+    position: static; 
+    
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;
+    gap: 20px; /* Space between the two buttons */
+    
+    width: 100%;
+    margin-top: 25px; /* Spacing from the bottom of the grid */
+    padding-bottom: 20px;
+}
+
+.book-result-item.disabled {
+    opacity: 0.5;
+    background-color: rgba(255, 255, 255, 0.05); /* Very faint */
+    cursor: not-allowed;
+    pointer-events: none; /* Prevents clicking entirely */
+    border-color: #444;
+}
+
+.book-result-item.disabled .book-title-result {
+    color: #888;
+}
+
+.book-result-item.disabled:hover {
+    transform: none;
+    border-color: #444;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.status-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Space between the grey box and the question mark */
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 700px; /* Increased slightly to fit the button */
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+.help-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: transparent; 
+    border: 2px solid var(--primary-gold);
+    color: var(--primary-gold);
+    font-weight: 800;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; /* Reset padding */
+}
+
+.help-icon-btn:hover {
+    background-color: var(--primary-gold);
+    color: var(--primary-black);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(201, 168, 106, 0.4);
+}
+
+/* --- Help Modal Styles --- */
+#help-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 3000; /* Highest priority */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+#help-modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#help-modal-container {
+    background-color: var(--primary-black);
+    border: 2px solid var(--primary-charcoal);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0,0,0,1);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+#help-modal-backdrop.visible #help-modal-container {
+    transform: scale(1);
+}
+
+.help-title {
+    color: var(--primary-gold);
+    text-transform: uppercase;
+    font-size: 1.8rem;
+    text-align: center;
+    margin: 0 0 25px 0;
+    letter-spacing: 1px;
+}
+
+.help-step {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.step-number {
+    background-color: var(--primary-gold);
+    color: var(--primary-black);
+    font-weight: 800;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Prevents squishing */
+}
+
+.help-step p {
+    margin: 0;
+    color: var(--primary-beige);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.help-step strong {
+    color: white;
+}
+
+/* --- Help Footer --- */
+.help-footer {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--primary-charcoal);
+    padding-top: 20px;
+}
+
+.dont-show-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-beige);
+    font-size: 0.9rem;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.dont-show-label:hover {
+    opacity: 1;
+}
+
+#start-game-btn {
+    background-color: var(--primary-gold);
+    color: var(--primary-black);
+    border: none;
+    width: 100%;
+    font-size: 1.1rem;
+}
+
+#start-game-btn:hover {
+    background-color: #e0bb72;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(201, 168, 106, 0.3);
+}
+
+/* --- Responsive Design (Mobile) --- */
+@media (max-width: 768px) {
+    .help-icon-btn {
+        position: static; /* Stack naturally on mobile */
+        margin: 10px auto 0 auto; /* Center it */
+    }
+    body {
+        height: auto; /* Allow scrolling on mobile */
+        display: block; /* Stack normally */
+    }
+    .game-info-container {
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    .stat-label {
+        font-size: 0.7rem;
+    }
+    .container {
+        display: grid;
+        height: auto; /* Let content dictate height */
+        max-height: none;
+        /* Mobile Aspect Ratio Fix: Force cells to have height */
+        grid-auto-rows: 1fr;
+        width: 100%;
+        margin: 0; /* Remove auto margin since the wrapper handles centering */
+
+    }
+    .grid-cell {
+        min-height: 85px; 
+        font-size: 0.8rem;
+    }
+    .row-header, .col-header {
+        font-size: 0.75rem;
+    }
+    .header-title {
+        margin-top: 10px;
+    }
+    .game-board-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .give-up-icon-btn:hover {
+        /* Override the default Gold hover with Red for "Danger" */
+        background-color: var(--error-red); 
+        border-color: var(--error-red);
+        color: white;
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
+    }
+
+    /* Ensure hidden works properly on these icon buttons */
+    .help-icon-btn.hidden {
+        display: none !important;
+    }
+    .post-game-container {
+        position: static; /* Remove absolute positioning */
+        width: 100%;
+        max-width: 300px;
+        margin: 20px auto 0 auto;
+        align-items: center;
+        flex-direction: row; /* Side by side on mobile */
+        justify-content: center;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .status-wrapper {
+        flex-wrap: nowrap; /* Keep them on the same line */
+        gap: 10px;
+    }
+    
+    .game-info-container {
+        padding: 8px 10px; /* Reduce padding to save space */
+    }
+    
+    .help-icon-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+}
+
