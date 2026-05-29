@@ -142,7 +142,7 @@ function renderSlot(el, groupIdx, slotIdx) {
         el.addEventListener('click', el._slotClickHandler);
     } else {
         el.className = 'book-slot filled';
-        const coverSrc = book.cover_override || book.cover;
+        const coverSrc = book.cover;
         el.innerHTML = `
             <button class="slot-clear-btn" aria-label="Remove ${book.title}" data-group="${groupIdx}" data-slot="${slotIdx}">×</button>
             <button class="slot-cover-edit-btn" title="Override cover URL" data-group="${groupIdx}" data-slot="${slotIdx}">✎</button>
@@ -162,7 +162,7 @@ function renderSlot(el, groupIdx, slotIdx) {
                     type="url"
                     class="slot-cover-url-input"
                     placeholder="Paste cover URL…"
-                    value="${book.cover_override || ''}"
+                    value=""
                     data-group="${groupIdx}"
                     data-slot="${slotIdx}"
                 />

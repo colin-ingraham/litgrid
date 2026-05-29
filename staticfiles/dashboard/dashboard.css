@@ -572,3 +572,104 @@
 .save-status.saved {
     color: var(--dash-success);
 }
+
+/* ══════════════════════════════════════════════
+   MOBILE SIDEBAR
+   ══════════════════════════════════════════════ */
+
+/* Hamburger — hidden on desktop */
+.sidebar-hamburger {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* Body scroll lock when sidebar is open */
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    /* Sidebar slides off-screen by default */
+    .dash-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 900;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        box-shadow: none;
+    }
+
+    .dash-sidebar.open {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Main takes full width */
+    .dash-main {
+        width: 100%;
+        padding: 16px 18px 24px;
+        min-height: 100vh;
+    }
+
+    /* Overlay backdrop */
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        z-index: 899;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s ease;
+    }
+
+    .sidebar-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Hamburger button */
+    .sidebar-hamburger {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+        background: var(--dash-surface);
+        border: 1px solid var(--dash-border);
+        border-radius: 7px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+        transition: border-color 0.15s;
+    }
+
+    .sidebar-hamburger:hover {
+        border-color: var(--dash-border-hi);
+    }
+
+    .sidebar-hamburger span {
+        display: block;
+        height: 2px;
+        background: var(--dash-muted);
+        border-radius: 2px;
+        transition: background 0.15s;
+    }
+
+    .sidebar-hamburger:hover span {
+        background: var(--dash-gold);
+    }
+}
+
+/* Desktop — keep overlay and hamburger invisible */
+@media (min-width: 769px) {
+    .sidebar-overlay {
+        display: none;
+    }
+}

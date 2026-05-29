@@ -164,13 +164,12 @@ def edit_puzzle(request, puzzle_id):
         books = []
         for entry in group.books.all():
             b = entry.book
-            cover = (getattr(b, 'cover_override', None) or b.thumbnail_url or '')
+            cover = (b.thumbnail_url or '').replace('http://', 'https://')
             books.append({
-                'id':             b.google_book_id,
-                'title':          b.title,
-                'author':         b.author.name if b.author else 'Unknown',
-                'cover':          cover.replace('http://', 'https://'),
-                'cover_override': getattr(b, 'cover_override', '') or '',
+                'id':     b.google_book_id,
+                'title':  b.title,
+                'author': b.author.name if b.author else 'Unknown',
+                'cover':  cover,
             })
         groups.append({'category': group.category, 'books': books})
 
@@ -232,8 +231,8 @@ def update_connections_puzzle(request, puzzle_id):
                 for slot, (book_data, book) in enumerate(zip(group_data['books'], books)):
                     ConnectionsBookEntry.objects.create(group=group, book=book, slot=slot)
                     override = (book_data.get('cover_override') or '').strip()
-                    if override and override != getattr(book, 'cover_override', None):
-                        Book.objects.filter(pk=book.pk).update(cover_override=override)
+                    if override and override != book.thumbnail_url:
+                        Book.objects.filter(pk=book.pk).update(thumbnail_url=override)
             puzzle.save()
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -298,8 +297,8 @@ def save_connections_puzzle(request):
                     ConnectionsBookEntry.objects.create(group=group, book=book, slot=slot)
                     # Apply cover override if the editor set one
                     override = (book_data.get('cover_override') or '').strip()
-                    if override and override != getattr(book, 'cover_override', None):
-                        Book.objects.filter(pk=book.pk).update(cover_override=override)
+                    if override and override != book.thumbnail_url:
+                        Book.objects.filter(pk=book.pk).update(thumbnail_url=override)
 
             # Delete the draft now that it's been published
             if draft_id:

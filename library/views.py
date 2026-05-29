@@ -160,11 +160,7 @@ def format_for_frontend(book_obj, source='local'):
     """
     PLACEHOLDER = 'https://placehold.co/55x80/4a4a4a/ffffff?text=N/A'
     if source == 'local':
-        cover = (
-            getattr(book_obj, 'cover_override', None)
-            or book_obj.thumbnail_url
-            or PLACEHOLDER
-        )
+        cover = book_obj.thumbnail_url or PLACEHOLDER
         return {
             'id':     book_obj.google_book_id,
             'title':  book_obj.title,
