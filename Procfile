@@ -1,1 +1,1 @@
-web: gunicorn litgrid.wsgi
+web: python manage.py migrate && gunicorn litgrid.wsgi
