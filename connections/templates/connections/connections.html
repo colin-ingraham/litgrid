@@ -11,13 +11,44 @@
 
 {% block content %}
 
-<!-- ── Page header (matches dashboard style) ── -->
-<div class="connections-page-header">
+<!-- ══════════════════════════════════════
+     MOBILE TOP BAR (hidden on desktop)
+     ══════════════════════════════════════ -->
+<div class="mobile-topbar">
+    <button class="mobile-menu-btn" id="sidebar-hamburger-mobile" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6"  x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+
+    <span class="mobile-topbar-title">
+        Connections{% if current_rank %} <span class="mobile-topbar-num">#{{ current_rank }}</span>{% endif %}
+    </span>
+
+    <div class="mobile-topbar-icons">
+        {% if all_puzzles_json != '[]' %}
+        <button id="archive-trigger-btn" class="help-icon-btn" aria-label="All puzzles">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="21 8 21 21 3 21 3 8"/>
+                <rect x="1" y="3" width="22" height="5"/>
+                <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>
+        </button>
+        {% endif %}
+        <button id="help-trigger-btn" class="help-icon-btn" aria-label="How to play">?</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     DESKTOP HEADER (hidden on mobile)
+     ══════════════════════════════════════ -->
+<div class="connections-page-header desktop-only">
     <div>
         <p class="connections-eyebrow">Litgrid</p>
         <h1 class="connections-title">Connections{% if current_rank %} <span style="color:var(--primary-gold); font-size:1.6rem; opacity:0.75;">#{{ current_rank }}</span>{% endif %}</h1>
     </div>
-
     <div class="connections-status-bar" style="margin-bottom:0;">
         <div class="mistakes-group">
             <span class="mistakes-label">Mistakes</span>
@@ -30,22 +61,21 @@
         </div>
         <div class="status-icons" style="margin-left:18px;">
             {% if all_puzzles_json != '[]' %}
-            <button id="archive-trigger-btn" class="help-icon-btn" aria-label="All puzzles">
+            <button id="archive-trigger-btn-desktop" class="help-icon-btn" aria-label="All puzzles">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-                    <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                    <polyline points="21 8 21 21 3 21 3 8"/>
+                    <rect x="1" y="3" width="22" height="5"/>
+                    <line x1="10" y1="12" x2="14" y2="12"/>
                 </svg>
             </button>
             {% endif %}
-            <button id="help-trigger-btn" class="help-icon-btn" aria-label="How to play">?</button>
+            <button id="help-trigger-btn-desktop" class="help-icon-btn" aria-label="How to play">?</button>
         </div>
     </div>
 </div>
+<div class="connections-rule desktop-only"></div>
 
-<!-- Gold rule -->
-<div class="connections-rule"></div>
-
-<!-- ── Puzzle selector modal ── -->
+<!-- ── Modals (shared) ── -->
 <div id="archive-modal-backdrop" class="hidden">
     <div id="archive-modal-container">
         <div class="archive-header">
@@ -56,7 +86,6 @@
     </div>
 </div>
 
-<!-- ── Help modal ── -->
 <div id="help-modal-backdrop" class="hidden">
     <div id="help-modal-container">
         <h2 class="help-title">How To Play</h2>
@@ -94,6 +123,18 @@
 <div class="connections-wrapper">
     <div id="solved-groups-container"></div>
     <div id="connections-grid" class="connections-grid"></div>
+
+    <!-- Mobile mistakes row (hidden on desktop) -->
+    <div class="mobile-mistakes-row mobile-only">
+        <span class="mistakes-label">Mistakes remaining</span>
+        <div class="mistake-pips">
+            <div class="mistake-pip"></div>
+            <div class="mistake-pip"></div>
+            <div class="mistake-pip"></div>
+            <div class="mistake-pip"></div>
+        </div>
+    </div>
+
     <div class="connections-controls" id="game-controls">
         <button id="shuffle-btn"  class="ctrl-btn">Shuffle</button>
         <button id="deselect-btn" class="ctrl-btn" disabled>Deselect All</button>
@@ -144,4 +185,26 @@
 
 {% block scripts %}
 <script src="{% static 'connections/connections.js' %}"></script>
+<script>
+// Wire up duplicate desktop button IDs to the same modal actions
+(function() {
+    const archiveDesktop = document.getElementById('archive-trigger-btn-desktop');
+    const helpDesktop    = document.getElementById('help-trigger-btn-desktop');
+    const archiveMobile  = document.getElementById('sidebar-hamburger-mobile');
+
+    if (archiveDesktop) archiveDesktop.addEventListener('click', () => showArchive());
+    if (helpDesktop)    helpDesktop.addEventListener('click',    () => showHelp());
+
+    // Mobile hamburger wires into the base.html sidebar toggle
+    if (archiveMobile) {
+        archiveMobile.addEventListener('click', () => {
+            const sidebar = document.getElementById('dash-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) sidebar.classList.add('open');
+            if (overlay) overlay.classList.add('visible');
+            document.body.classList.add('sidebar-open');
+        });
+    }
+})();
+</script>
 {% endblock %}

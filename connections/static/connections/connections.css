@@ -1,17 +1,18 @@
 /* ══════════════════════════════════════════════════════
-   LITGRID: CONNECTIONS — page styles
-   Shares dashboard's editorial dark luxury aesthetic.
-   Fonts: Playfair Display (headings) · DM Sans (body) · DM Mono (data)
+   LITGRID: CONNECTIONS
+   Desktop-first, mobile fully restructured at ≤768px
    ══════════════════════════════════════════════════════ */
-
-/* ── Page-level overrides ─────────────────────────────── */
 
 body.connections-page {
     overflow-y: auto;
 }
 
+/* ── Visibility helpers ── */
+.mobile-only { display: none; }
+.desktop-only { display: block; }
+
 /* ══════════════════════════════════════════════════════
-   PAGE HEADER  (mirrors .page-header + .dash-rule)
+   DESKTOP: PAGE HEADER
    ══════════════════════════════════════════════════════ */
 
 .connections-page-header {
@@ -47,10 +48,7 @@ body.connections-page {
     opacity: 0.5;
 }
 
-/* ══════════════════════════════════════════════════════
-   STATUS BAR
-   ══════════════════════════════════════════════════════ */
-
+/* ── Desktop status bar ── */
 .connections-status-bar {
     display: flex;
     align-items: center;
@@ -83,8 +81,7 @@ body.connections-page {
     height: 14px;
     border-radius: 50%;
     background-color: var(--primary-gold);
-    transition: background-color 0.4s ease, transform 0.25s ease,
-                box-shadow 0.4s ease;
+    transition: background-color 0.4s ease, transform 0.25s ease, box-shadow 0.4s ease;
     box-shadow: 0 0 6px rgba(201, 168, 106, 0.4);
 }
 
@@ -100,10 +97,8 @@ body.connections-page {
     gap: 8px;
 }
 
-/* Reuse dashboard's help-icon-btn via dashboard.css — no overrides needed */
-
 /* ══════════════════════════════════════════════════════
-   MAIN GAME WRAPPER
+   GAME WRAPPER
    ══════════════════════════════════════════════════════ */
 
 .connections-wrapper {
@@ -116,7 +111,6 @@ body.connections-page {
     padding-bottom: 40px;
 }
 
-/* Center the header and rule over the same max-width */
 .connections-page-header,
 .connections-rule {
     max-width: 960px;
@@ -126,7 +120,7 @@ body.connections-page {
 }
 
 /* ══════════════════════════════════════════════════════
-   SOLVED GROUPS  (stack above the grid as they're found)
+   SOLVED GROUPS
    ══════════════════════════════════════════════════════ */
 
 #solved-groups-container {
@@ -135,7 +129,6 @@ body.connections-page {
     gap: 10px;
 }
 
-/* Each solved row matches the height of one tile row */
 .solved-group-row {
     border-radius: 8px;
     height: 150px;
@@ -151,10 +144,9 @@ body.connections-page {
 
 @keyframes groupReveal {
     from { opacity: 0; transform: translateY(-10px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)      scale(1); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Left two covers */
 .solved-group-left-covers,
 .solved-group-right-covers {
     display: flex;
@@ -162,13 +154,8 @@ body.connections-page {
     gap: 8px;
 }
 
-.solved-group-left-covers {
-    justify-content: flex-end;
-}
-
-.solved-group-right-covers {
-    justify-content: flex-start;
-}
+.solved-group-left-covers  { justify-content: flex-end; }
+.solved-group-right-covers { justify-content: flex-start; }
 
 .solved-cover {
     height: 100px;
@@ -181,15 +168,9 @@ body.connections-page {
     transition: transform 0.2s ease;
 }
 
-.solved-cover:hover {
-    transform: translateY(-3px) scale(1.03);
-}
+.solved-cover:hover { transform: translateY(-3px) scale(1.03); }
+.solved-cover.missing { display: none; }
 
-.solved-cover.missing {
-    display: none;
-}
-
-/* Center label */
 .solved-group-center {
     display: flex;
     flex-direction: column;
@@ -234,8 +215,6 @@ body.connections-page {
     width: 100%;
 }
 
-/* ── Individual tile ─────────────────────────────────── */
-
 .connection-tile {
     background-color: #1c1c1c;
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -256,7 +235,6 @@ body.connections-page {
     position: relative;
 }
 
-/* Subtle top sheen line */
 .connection-tile::before {
     content: '';
     position: absolute;
@@ -270,40 +248,34 @@ body.connections-page {
     border-color: rgba(201, 168, 106, 0.5);
     background-color: #222;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(201, 168, 106, 0.15);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,106,0.15);
 }
 
 .connection-tile.selected {
     background-color: #2a2210;
     border-color: var(--primary-gold);
-    box-shadow: 0 0 0 1px var(--primary-gold),
-                0 6px 24px rgba(201, 168, 106, 0.2);
+    box-shadow: 0 0 0 1px var(--primary-gold), 0 6px 24px rgba(201,168,106,0.2);
 }
 
 .connection-tile.selected::before {
     background: linear-gradient(to right, transparent, rgba(201,168,106,0.2), transparent);
 }
 
-/* ── Shake animation (wrong guess) ───────────────────── */
-.connection-tile.shake {
-    animation: tileShake 0.55s ease;
-}
+/* Shake */
+.connection-tile.shake { animation: tileShake 0.55s ease; }
 
 @keyframes tileShake {
-    0%,  100% { transform: translateX(0); }
-    15%        { transform: translateX(-7px); }
-    30%        { transform: translateX(7px); }
-    45%        { transform: translateX(-4px); }
-    60%        { transform: translateX(4px); }
-    75%        { transform: translateX(-2px); }
-    90%        { transform: translateX(2px); }
+    0%,100% { transform: translateX(0); }
+    15%      { transform: translateX(-7px); }
+    30%      { transform: translateX(7px); }
+    45%      { transform: translateX(-4px); }
+    60%      { transform: translateX(4px); }
+    75%      { transform: translateX(-2px); }
+    90%      { transform: translateX(2px); }
 }
 
-/* ── Bounce animation (correct guess) ───────────────── */
-.connection-tile.bounce {
-    animation: tileBounce 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-}
+/* Bounce + flash */
+.connection-tile.bounce { animation: tileBounce 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
 
 @keyframes tileBounce {
     0%   { transform: translateY(0) scale(1); }
@@ -314,18 +286,15 @@ body.connections-page {
     100% { transform: translateY(0) scale(1); }
 }
 
-/* ── Flash animation (correct guess overlay) ─────────── */
-.connection-tile.correct-flash {
-    animation: tileFlash 0.45s ease forwards;
-}
+.connection-tile.correct-flash { animation: tileFlash 0.45s ease forwards; }
 
 @keyframes tileFlash {
-    0%   { box-shadow: inset 0 0 0 2px rgba(106,170,100,0);  background-color: #1c1c1c; }
+    0%   { box-shadow: inset 0 0 0 2px rgba(106,170,100,0);   background-color: #1c1c1c; }
     40%  { box-shadow: inset 0 0 0 2px rgba(106,170,100,0.8); background-color: #1f2e1e; }
-    100% { box-shadow: inset 0 0 0 2px rgba(106,170,100,0);  background-color: #1c1c1c; }
+    100% { box-shadow: inset 0 0 0 2px rgba(106,170,100,0);   background-color: #1c1c1c; }
 }
 
-/* ── Tile inner layout ───────────────────────────────── */
+/* Tile layout */
 .tile-inner {
     display: flex;
     flex-direction: column;
@@ -342,18 +311,13 @@ body.connections-page {
     max-width: 88%;
     object-fit: contain;
     border-radius: 3px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.7);
     flex-shrink: 0;
     transition: transform 0.2s ease;
 }
 
-.connection-tile:hover .tile-cover {
-    transform: scale(1.06);
-}
-
-.tile-cover.cover-error {
-    display: none;
-}
+.connection-tile:hover .tile-cover { transform: scale(1.06); }
+.tile-cover.cover-error { display: none; }
 
 .tile-title {
     font-family: 'DM Sans', sans-serif;
@@ -381,7 +345,7 @@ body.connections-page {
 }
 
 /* ══════════════════════════════════════════════════════
-   CONTROLS
+   CONTROLS (desktop)
    ══════════════════════════════════════════════════════ */
 
 .connections-controls {
@@ -415,12 +379,8 @@ body.connections-page {
     transform: translateY(-1px);
 }
 
-.ctrl-btn:disabled {
-    opacity: 0.2;
-    cursor: not-allowed;
-}
+.ctrl-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
-/* Submit — gold filled when active */
 .submit-btn {
     color: rgba(201, 168, 106, 0.3);
     border-color: rgba(201, 168, 106, 0.15);
@@ -477,7 +437,7 @@ body.connections-page {
 #end-modal-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.82);
+    background-color: rgba(0,0,0,0.82);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     z-index: 2000;
@@ -489,28 +449,23 @@ body.connections-page {
     transition: opacity 0.3s ease;
 }
 
-#end-modal-backdrop.visible {
-    opacity: 1;
-    pointer-events: auto;
-}
+#end-modal-backdrop.visible { opacity: 1; pointer-events: auto; }
 
 #end-modal-container {
     background-color: #111;
-    border: 1px solid rgba(201, 168, 106, 0.2);
+    border: 1px solid rgba(201,168,106,0.2);
     border-radius: 14px;
     padding: 36px 32px 28px;
     max-width: 420px;
     width: 90%;
     position: relative;
     text-align: center;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.9);
     transform: translateY(16px);
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-#end-modal-backdrop.visible #end-modal-container {
-    transform: translateY(0);
-}
+#end-modal-backdrop.visible #end-modal-container { transform: translateY(0); }
 
 .end-title {
     font-family: 'Playfair Display', Georgia, serif;
@@ -544,7 +499,7 @@ body.connections-page {
     font-family: 'DM Mono', monospace;
     font-size: 0.72rem;
     font-weight: 700;
-    color: rgba(16, 16, 16, 0.55);
+    color: rgba(16,16,16,0.55);
     min-width: 28px;
     flex-shrink: 0;
     text-align: center;
@@ -556,13 +511,11 @@ body.connections-page {
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: rgba(16, 16, 16, 0.9);
+    color: rgba(16,16,16,0.9);
     flex: 1;
 }
 
-.end-summary-row.not-solved {
-    opacity: 0.4;
-}
+.end-summary-row.not-solved { opacity: 0.4; }
 
 .end-footer {
     display: flex;
@@ -573,9 +526,7 @@ body.connections-page {
     margin-bottom: 16px;
 }
 
-.timer-container {
-    text-align: left;
-}
+.timer-container { text-align: left; }
 
 .timer-label {
     font-family: 'DM Mono', monospace;
@@ -583,13 +534,13 @@ body.connections-page {
     font-weight: 500;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(232, 220, 196, 0.4);
+    color: rgba(232,220,196,0.4);
     margin: 0 0 6px;
 }
 
 .archive-from-end-btn {
     background: transparent;
-    border: 1px solid rgba(201, 168, 106, 0.3);
+    border: 1px solid rgba(201,168,106,0.3);
     color: var(--primary-gold);
     font-family: 'DM Mono', monospace;
     font-size: 0.72rem;
@@ -604,7 +555,7 @@ body.connections-page {
 }
 
 .archive-from-end-btn:hover {
-    background: rgba(201, 168, 106, 0.1);
+    background: rgba(201,168,106,0.1);
     border-color: var(--primary-gold);
 }
 
@@ -629,13 +580,13 @@ body.connections-page {
 .share-button:hover {
     background-color: #d9b87a;
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(201, 168, 106, 0.35);
+    box-shadow: 0 4px 14px rgba(201,168,106,0.35);
 }
 
 .back-link {
     background: none;
     border: none;
-    color: rgba(232, 220, 196, 0.4);
+    color: rgba(232,220,196,0.4);
     font-family: 'DM Mono', monospace;
     font-size: 0.72rem;
     letter-spacing: 0.5px;
@@ -645,14 +596,9 @@ body.connections-page {
     padding: 0;
 }
 
-.back-link:hover {
-    color: var(--primary-beige);
-}
+.back-link:hover { color: var(--primary-beige); }
 
-/* ══════════════════════════════════════════════════════
-   HELP MODAL  (overrides style.css defaults for this page)
-   ══════════════════════════════════════════════════════ */
-
+/* ── Help modal overrides ── */
 #start-game-btn {
     background-color: var(--primary-gold) !important;
     color: #1a1208 !important;
@@ -667,78 +613,237 @@ body.connections-page {
     transform: translateY(-1px);
 }
 
-/* ══════════════════════════════════════════════════════
-   ARCHIVE MODAL  (puzzle selector)
-   ══════════════════════════════════════════════════════ */
-
+/* ── Archive modal ── */
 .archive-item--current {
-    background-color: rgba(201, 168, 106, 0.07);
-    border-color: rgba(201, 168, 106, 0.25) !important;
+    background-color: rgba(201,168,106,0.07);
+    border-color: rgba(201,168,106,0.25) !important;
     pointer-events: none;
 }
 
 .archive-item--done .archive-status {
-    color: var(--dash-success, #6aaa64);
+    color: #6aaa64;
     font-weight: 700;
     font-size: 0.85rem;
 }
 
-/* ══════════════════════════════════════════════════════
-   NO PUZZLE STATE
-   ══════════════════════════════════════════════════════ */
-
+/* ── No puzzle state ── */
 .no-puzzle-state {
     text-align: center;
     padding: 80px 20px;
-    color: rgba(232, 220, 196, 0.3);
+    color: rgba(232,220,196,0.3);
     font-family: 'DM Mono', monospace;
     font-size: 0.85rem;
     letter-spacing: 1px;
 }
 
+/* ── Mobile mistakes row (hidden desktop) ── */
+.mobile-mistakes-row {
+    display: none;
+}
+
 /* ══════════════════════════════════════════════════════
-   RESPONSIVE
+   MOBILE  ≤ 768px  — full redesign
    ══════════════════════════════════════════════════════ */
 
-@media (max-width: 640px) {
-    .connections-title {
-        font-size: 1.7rem;
+@media (max-width: 768px) {
+
+    /* Visibility flips */
+    .mobile-only  { display: flex; }
+    .desktop-only { display: none !important; }
+
+    /* ── Mobile top bar ── */
+    .mobile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        margin: -16px -18px 12px;   /* bleed to edges, compensate dash-main padding */
+        background: rgba(13,13,13,0.95);
+        border-bottom: 1px solid rgba(201,168,106,0.12);
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
 
+    .mobile-menu-btn {
+        width: 36px;
+        height: 36px;
+        background: transparent;
+        border: 1px solid rgba(201,168,106,0.2);
+        border-radius: 7px;
+        color: var(--primary-gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        padding: 0;
+    }
+
+    .mobile-menu-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .mobile-topbar-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--primary-beige);
+        flex: 1;
+        text-align: center;
+    }
+
+    .mobile-topbar-num {
+        color: var(--primary-gold);
+        font-size: 0.95rem;
+        opacity: 0.8;
+    }
+
+    .mobile-topbar-icons {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    /* ── Override sidebar hamburger from base.html to do nothing
+          (we have our own mobile-menu-btn above) ── */
+    .sidebar-hamburger {
+        display: none !important;
+    }
+
+    /* ── Game wrapper ── */
     .connections-wrapper {
         gap: 8px;
-        padding-bottom: 28px;
+        padding: 0 0 20px;
+        margin: 0;
+        max-width: 100%;
     }
 
+    /* ── Grid — edge to edge, small gap ── */
+    .connections-grid {
+        gap: 6px;
+        padding: 0 4px;
+    }
+
+    /* ── Tiles — taller, full width, unclamped text ── */
     .connection-tile {
-        min-height: 110px;
-        padding: 7px 4px 6px;
+        min-height: 0;
+        height: auto;
+        padding: 10px 5px 8px;
+        border-radius: 7px;
+        /* Remove hover lift on touch */
+        transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+    }
+
+    .connection-tile:hover {
+        transform: none;
+    }
+
+    .connection-tile.selected {
+        transform: none;
+    }
+
+    .tile-inner {
+        gap: 4px;
     }
 
     .tile-cover {
-        height: 54px;
+        height: 60px;
+        transition: none;
     }
 
-    .ctrl-btn {
-        padding: 8px 13px;
+    .connection-tile:hover .tile-cover {
+        transform: none;
+    }
+
+    /* Fully show title and author — no clamping */
+    .tile-title {
         font-size: 0.68rem;
+        font-weight: 600;
+        -webkit-line-clamp: unset;
+        display: block;
+        overflow: visible;
+        white-space: normal;
+        line-height: 1.3;
     }
 
-    .connections-controls {
-        gap: 7px;
+    .tile-author {
+        font-size: 0.6rem;
+        -webkit-line-clamp: unset;
+        display: block;
+        overflow: visible;
+        white-space: normal;
+        opacity: 0.85;
+    }
+
+    /* ── Solved group rows — slimmer on mobile ── */
+    .solved-group-row {
+        height: 90px;
+        padding: 0 10px;
+        gap: 8px;
+    }
+
+    .solved-cover {
+        height: 65px;
+        max-width: 44px;
+    }
+
+    .solved-group-category {
+        font-size: 0.6rem;
+        letter-spacing: 1px;
     }
 
     .solved-group-books {
-        display: none; /* save vertical space on small screens */
+        display: none;
+    }
+
+    /* ── Mobile mistakes row ── */
+    .mobile-mistakes-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 4px 0 2px;
+    }
+
+    .mobile-mistakes-row .mistakes-label {
+        font-size: 0.6rem;
+    }
+
+    /* ── Controls ── */
+    .connections-controls {
+        padding: 4px 4px 2px;
+        gap: 8px;
+    }
+
+    .ctrl-btn {
+        padding: 11px 0;
+        font-size: 0.68rem;
+        flex: 1;
+        text-align: center;
+        letter-spacing: 0.5px;
+    }
+
+    /* End modal — full width on mobile */
+    #end-modal-container {
+        width: 96%;
+        padding: 28px 20px 22px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .end-title {
+        font-size: 1.5rem;
+        margin-bottom: 16px;
     }
 }
 
-@media (max-width: 380px) {
-    .connection-tile {
-        min-height: 92px;
-    }
-
-    .tile-cover {
-        height: 44px;
+/* ── Desktop: hide mobile topbar ── */
+@media (min-width: 769px) {
+    .mobile-topbar {
+        display: none;
     }
 }

@@ -15,8 +15,11 @@
 </head>
 <body class="dashboard-body {% block body_class %}{% endblock %}">
 
+    <!-- ── Mobile overlay ── -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
     <!-- ── Sidebar ── -->
-    <aside class="dash-sidebar">
+    <aside class="dash-sidebar" id="dash-sidebar">
         <div class="sidebar-brand">
             <span class="brand-name">Litgrid</span>
             <span class="brand-tagline">A literary puzzle game</span>
@@ -71,9 +74,41 @@
 
     <!-- ── Main ── -->
     <main class="dash-main">
+        <button class="sidebar-hamburger" id="sidebar-hamburger" aria-label="Open menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
         {% block content %}{% endblock %}
     </main>
 
     {% block scripts %}{% endblock %}
+    <script>
+        (function() {
+            const hamburger = document.getElementById('sidebar-hamburger');
+            const sidebar   = document.getElementById('dash-sidebar');
+            const overlay   = document.getElementById('sidebar-overlay');
+
+            function openSidebar() {
+                sidebar.classList.add('open');
+                overlay.classList.add('visible');
+                document.body.classList.add('sidebar-open');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('sidebar-open');
+            }
+
+            hamburger.addEventListener('click', openSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            // Close on nav link tap (mobile navigation)
+            sidebar.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', closeSidebar);
+            });
+        })();
+    </script>
 </body>
 </html>
