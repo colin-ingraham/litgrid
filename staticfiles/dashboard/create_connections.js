@@ -395,7 +395,7 @@ async function publishPuzzle() {
         draft_id: state.draftId,
         groups:   state.groups.map(g => ({
             category: g.category.trim(),
-            books:    g.books.map(b => ({ id: b.id, title: b.title, author: b.author })),
+            books:    g.books.map(b => ({ id: b.id, title: b.title, author: b.author, cover_override: b.cover_override || '' })),
         })),
     };
 
