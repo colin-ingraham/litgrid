@@ -1,16 +1,9 @@
 """
 Management command: release_weekly_puzzle
 Run every Sunday at 00:00 via Railway cron.
-
-What it does:
-1. Finds the next queued puzzle (complete, no release_date, lowest id).
-2. Sets its release_date to today.
-3. Checks if another queued puzzle exists after that one.
-   If not, sends a warning email so you can prepare one.
 """
 
 from django.core.management.base import BaseCommand
-from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 
@@ -23,7 +16,6 @@ class Command(BaseCommand):
 
         today = timezone.now().date()
 
-        # ── Find next unreleased complete puzzle ──────────────────────────────
         next_puzzle = (
             ConnectionsPuzzle.objects
             .filter(release_date__isnull=True)
@@ -33,7 +25,7 @@ class Command(BaseCommand):
 
         if not next_puzzle:
             self.stdout.write(self.style.WARNING('No queued puzzles found. Nothing released.'))
-            self._send_warning_email(
+            self._send(
                 subject='⚠️ Litgrid: No puzzle to release this week',
                 body=(
                     'The weekly release ran but found no queued puzzles.\n\n'
@@ -46,33 +38,30 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(
                 f'Next queued puzzle #{next_puzzle.id} is incomplete. Skipping.'
             ))
-            self._send_warning_email(
+            self._send(
                 subject='⚠️ Litgrid: Next puzzle is incomplete',
                 body=(
-                    f'The weekly release found puzzle #{next_puzzle.id} but it is incomplete '
-                    f'(missing groups or books).\n\nNo puzzle was released. Please fix it.'
+                    f'The weekly release found puzzle #{next_puzzle.id} but it is incomplete.\n\n'
+                    'No puzzle was released. Please fix it.'
                 )
             )
             return
 
-        # ── Release it ────────────────────────────────────────────────────────
         next_puzzle.release_date = today
         next_puzzle.save(update_fields=['release_date'])
         self.stdout.write(self.style.SUCCESS(
             f'Released puzzle #{next_puzzle.id} for {today}.'
         ))
 
-        # ── Check if backlog has another one ready ────────────────────────────
         remaining = (
             ConnectionsPuzzle.objects
             .filter(release_date__isnull=True)
-            .order_by('id')
             .count()
         )
 
         if remaining == 0:
-            self.stdout.write(self.style.WARNING('Backlog is now empty — sending alert email.'))
-            self._send_warning_email(
+            self.stdout.write(self.style.WARNING('Backlog is now empty — sending alert.'))
+            self._send(
                 subject='⚠️ Litgrid: Puzzle backlog is empty',
                 body=(
                     f'Puzzle #{next_puzzle.id} was released today ({today}).\n\n'
@@ -83,21 +72,23 @@ class Command(BaseCommand):
         else:
             self.stdout.write(f'{remaining} puzzle(s) remaining in backlog.')
 
-    def _send_warning_email(self, subject, body):
+    def _send(self, subject, body):
+        import resend
         admin_email = getattr(settings, 'ADMIN_EMAIL', None)
         if not admin_email:
-            self.stdout.write(self.style.WARNING(
-                'ADMIN_EMAIL not set in settings — cannot send alert.'
-            ))
+            self.stdout.write(self.style.WARNING('ADMIN_EMAIL not set — cannot send alert.'))
+            return
+        resend.api_key = getattr(settings, 'RESEND_API_KEY', '')
+        if not resend.api_key:
+            self.stdout.write(self.style.WARNING('RESEND_API_KEY not set — cannot send alert.'))
             return
         try:
-            send_mail(
-                subject=subject,
-                message=body,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@litgrid.app'),
-                recipient_list=[admin_email],
-                fail_silently=False,
-            )
-            self.stdout.write(f'Alert email sent to {admin_email}.')
+            resend.Emails.send({
+                'from':    'Litgrid <alerts@playlitgrid.com>',
+                'to':      admin_email,
+                'subject': subject,
+                'text':    body,
+            })
+            self.stdout.write(f'Alert sent to {admin_email}.')
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Failed to send email: {e}'))

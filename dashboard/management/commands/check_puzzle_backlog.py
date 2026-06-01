@@ -1,15 +1,10 @@
 """
 Management command: check_puzzle_backlog
-Run every Saturday at 00:00 via Railway cron — 24 hours before the weekly release.
-
-Sends a warning email if there are no queued puzzles waiting after
-the one about to be released on Sunday.
+Run every Saturday at 00:00 via Railway cron — 24h warning before weekly release.
 """
 
 from django.core.management.base import BaseCommand
-from django.core.mail import send_mail
 from django.conf import settings
-from django.utils import timezone
 
 
 class Command(BaseCommand):
@@ -27,7 +22,7 @@ class Command(BaseCommand):
 
         if count == 0:
             self.stdout.write(self.style.WARNING('Backlog empty — sending 24h warning.'))
-            self._send_email(
+            self._send(
                 subject='⚠️ Litgrid: No puzzle ready for Sunday',
                 body=(
                     'This is your 24-hour warning.\n\n'
@@ -37,12 +32,11 @@ class Command(BaseCommand):
                 )
             )
         elif count == 1:
-            # Only one left — after Sunday it'll be empty
             next_up = queued.first()
             self.stdout.write(self.style.WARNING(
                 f'Only 1 puzzle in backlog (#{next_up.id}). Sending low-stock warning.'
             ))
-            self._send_email(
+            self._send(
                 subject='📋 Litgrid: Puzzle backlog running low',
                 body=(
                     f'This is your 24-hour heads-up.\n\n'
@@ -56,19 +50,23 @@ class Command(BaseCommand):
                 self.style.SUCCESS(f'Backlog looks good — {count} puzzles queued.')
             )
 
-    def _send_email(self, subject, body):
+    def _send(self, subject, body):
+        import resend
         admin_email = getattr(settings, 'ADMIN_EMAIL', None)
         if not admin_email:
             self.stdout.write(self.style.WARNING('ADMIN_EMAIL not set — cannot send alert.'))
             return
+        resend.api_key = getattr(settings, 'RESEND_API_KEY', '')
+        if not resend.api_key:
+            self.stdout.write(self.style.WARNING('RESEND_API_KEY not set — cannot send alert.'))
+            return
         try:
-            send_mail(
-                subject=subject,
-                message=body,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@litgrid.app'),
-                recipient_list=[admin_email],
-                fail_silently=False,
-            )
-            self.stdout.write(f'Warning email sent to {admin_email}.')
+            resend.Emails.send({
+                'from':    'Litgrid <alerts@playlitgrid.com>',
+                'to':      admin_email,
+                'subject': subject,
+                'text':    body,
+            })
+            self.stdout.write(f'Alert sent to {admin_email}.')
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Failed to send email: {e}'))
