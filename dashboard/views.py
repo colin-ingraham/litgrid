@@ -113,7 +113,7 @@ def dashboard_home(request):
         s = stats_map.get(puzzle.id, {})
         total = s.get('total_plays', 0)
         wins  = s.get('wins', 0)
-        puzzle._stats = {
+        puzzle.stats = {
             'plays':         total,
             'win_rate':      f"{round(wins / total * 100)}%" if total else '—',
             'avg_mistakes':  f"{round(s['avg_mistakes'], 1)}" if s.get('avg_mistakes') is not None else '—',

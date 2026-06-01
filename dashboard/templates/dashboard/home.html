@@ -78,11 +78,11 @@
             </span>
             <span class="puzzle-created">{{ puzzle.created_at|date:"M d, Y" }}</span>
             <span class="puzzle-stats">
-                {% if puzzle.is_released and puzzle._stats.plays %}
-                    <span class="stat-chip">▶ {{ puzzle._stats.plays }}</span>
-                    <span class="stat-chip">✓ {{ puzzle._stats.win_rate }}</span>
-                    <span class="stat-chip">✗ {{ puzzle._stats.avg_mistakes }} avg</span>
-                    <span class="stat-chip">↗ {{ puzzle._stats.plays_this_week }}w</span>
+                {% if puzzle.is_released and puzzle.stats.plays %}
+                    <span class="stat-chip">▶ {{ puzzle.stats.plays }}</span>
+                    <span class="stat-chip">✓ {{ puzzle.stats.win_rate }}</span>
+                    <span class="stat-chip">✗ {{ puzzle.stats.avg_mistakes }} avg</span>
+                    <span class="stat-chip">↗ {{ puzzle.stats.plays_this_week }}w</span>
                 {% elif puzzle.is_released %}
                     <span style="opacity:0.3; font-size:0.75rem;">No plays yet</span>
                 {% else %}
