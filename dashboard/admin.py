@@ -24,8 +24,9 @@ class ConnectionsGroupAdmin(admin.ModelAdmin):
 
 @admin.register(ConnectionsPuzzle)
 class ConnectionsPuzzleAdmin(admin.ModelAdmin):
-    list_display    = ('__str__', 'created_by', 'created_at', 'is_complete')
-    list_filter     = ('created_by',)
+    list_display    = ('__str__', 'release_date', 'is_released', 'created_by', 'created_at', 'is_complete')
+    list_filter     = ('release_date',)
+    list_editable   = ('release_date',)   # edit release date inline in the list view
     readonly_fields = ('created_at', 'updated_at', 'created_by')
     inlines         = [ConnectionsGroupInline]
 
@@ -33,6 +34,11 @@ class ConnectionsPuzzleAdmin(admin.ModelAdmin):
         return obj.is_complete()
     is_complete.boolean = True
     is_complete.short_description = 'Complete'
+
+    def is_released(self, obj):
+        return obj.is_released
+    is_released.boolean = True
+    is_released.short_description = 'Live'
 
 
 @admin.register(ConnectionsDraft)

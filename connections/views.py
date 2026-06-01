@@ -1,9 +1,11 @@
 import json
 import requests
+from datetime import date as date_type
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from django.utils import timezone
 
 GOOGLE_BOOKS_URL    = "https://www.googleapis.com/books/v1/volumes"
 PLACEHOLDER_COVER   = 'https://placehold.co/60x90/2D2D2D/C9A86A?text=N%2FA'
@@ -57,8 +59,10 @@ def _puzzle_to_json(puzzle):
 def _all_puzzle_stubs(completed_ids):
     try:
         from dashboard.models import ConnectionsPuzzle
+        today = timezone.now().date()
         ids = list(
             ConnectionsPuzzle.objects
+            .filter(release_date__isnull=False, release_date__lte=today)
             .order_by('id')
             .values_list('id', flat=True)
         )
@@ -88,10 +92,17 @@ def ConnectionsGame(request, puzzle_id=None):
 
         all_puzzles = _all_puzzle_stubs(completed_ids)
 
+        today = timezone.now().date()
+        released_qs = ConnectionsPuzzle.objects.filter(
+            release_date__isnull=False,
+            release_date__lte=today,
+        )
+
         if puzzle_id is not None:
-            puzzle = get_object_or_404(ConnectionsPuzzle, pk=puzzle_id)
+            # 404 if the puzzle isn't released yet
+            puzzle = get_object_or_404(released_qs, pk=puzzle_id)
         else:
-            puzzle = ConnectionsPuzzle.objects.order_by('-id').first()
+            puzzle = released_qs.order_by('-id').first()
 
         if puzzle:
             puzzle_data  = _puzzle_to_json(puzzle)

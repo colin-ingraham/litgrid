@@ -30,19 +30,12 @@
         </div>
         {% for draft in drafts %}
         <div class="puzzle-table__row draft-row">
-            <span class="puzzle-date-cell draft-title">
-                {{ draft.preview_title }}
-            </span>
-            <span>
-                <span class="badge badge--yellow">{{ draft.books_placed }} / 16 books</span>
-            </span>
+            <span class="puzzle-date-cell draft-title">{{ draft.preview_title }}</span>
+            <span><span class="badge badge--yellow">{{ draft.books_placed }} / 16 books</span></span>
             <span class="puzzle-author">{{ draft.updated_at|date:"M d, Y g:i a" }}</span>
             <span class="puzzle-actions">
                 <a href="{% url 'dashboard:edit_connections' draft.id %}" class="table-link">Edit</a>
-                <button
-                    class="table-link table-link--danger delete-draft-btn"
-                    data-draft-id="{{ draft.id }}"
-                >Delete</button>
+                <button class="table-link table-link--danger delete-draft-btn" data-draft-id="{{ draft.id }}">Delete</button>
             </span>
         </div>
         {% endfor %}
@@ -59,7 +52,7 @@
         <div class="puzzle-table__header">
             <span>#</span>
             <span>Status</span>
-            <span>Created by</span>
+            <span>Release Date</span>
             <span>Created</span>
             <span>Actions</span>
         </div>
@@ -67,16 +60,26 @@
         <div class="puzzle-table__row">
             <span class="puzzle-number-cell">#{{ forloop.revcounter }}</span>
             <span>
-                {% if puzzle.is_complete %}
-                    <span class="badge badge--green">Complete</span>
+                {% if puzzle.is_released %}
+                    <span class="badge badge--green">Live</span>
+                {% elif puzzle.release_date %}
+                    <span class="badge badge--yellow">Scheduled</span>
                 {% else %}
-                    <span class="badge badge--yellow">Draft</span>
+                    <span class="badge" style="background:rgba(255,255,255,0.06); color: var(--dash-muted); border:1px solid rgba(255,255,255,0.1);">Queued</span>
                 {% endif %}
             </span>
-            <span class="puzzle-author">{{ puzzle.created_by.username|default:"—" }}</span>
+            <span class="puzzle-created">
+                {% if puzzle.release_date %}
+                    {{ puzzle.release_date|date:"M d, Y" }}
+                {% else %}
+                    <span style="opacity:0.35;">—</span>
+                {% endif %}
+            </span>
             <span class="puzzle-created">{{ puzzle.created_at|date:"M d, Y" }}</span>
             <span class="puzzle-actions">
-                <a href="/connections/{{ puzzle.id }}/" class="table-link">Play</a>
+                {% if puzzle.is_released %}
+                    <a href="/connections/{{ puzzle.id }}/" class="table-link">Play</a>
+                {% endif %}
                 <a href="{% url 'dashboard:edit_puzzle' puzzle.id %}" class="table-link">Edit</a>
             </span>
         </div>
@@ -99,13 +102,10 @@ document.querySelectorAll('.delete-draft-btn').forEach(btn => {
         const draftId = btn.dataset.draftId;
         const resp = await fetch(`/dashboard/api/draft/delete/${draftId}/`, {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
-            },
+            headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' },
         });
         if ((await resp.json()).success) {
             btn.closest('.draft-row').remove();
-            // Hide section header if no drafts left
             if (!document.querySelector('.draft-row')) {
                 document.querySelector('.recent-section:first-of-type').remove();
             }

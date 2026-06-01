@@ -1,15 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class ConnectionsPuzzle(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+    release_date = models.DateField(
+        null=True, blank=True,
+        help_text="Date this puzzle becomes available to players. Null = queued/unreleased."
+    )
     created_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True,
         related_name='connections_puzzles',
     )
 
@@ -22,6 +25,12 @@ class ConnectionsPuzzle(models.Model):
     @property
     def number(self):
         return self.id
+
+    @property
+    def is_released(self):
+        if not self.release_date:
+            return False
+        return self.release_date <= timezone.now().date()
 
     def is_complete(self):
         groups = self.groups.prefetch_related('books')
@@ -67,18 +76,12 @@ class ConnectionsBookEntry(models.Model):
 
 
 class ConnectionsDraft(models.Model):
-    """
-    Stores an in-progress connections puzzle as a JSON blob.
-    No book FK relations — books are committed to the DB only on final save.
-    """
     created_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
+        User, on_delete=models.CASCADE,
         related_name='connections_drafts',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # Full editor state: { groups: [ { category, books: [{id, title, author, cover}|null] } ] }
     data       = models.JSONField(default=dict)
 
     class Meta:
@@ -88,7 +91,6 @@ class ConnectionsDraft(models.Model):
         return f"Draft #{self.id} by {self.created_by} ({self.updated_at:%Y-%m-%d %H:%M})"
 
     def books_placed(self):
-        """Count of non-null book slots across all groups."""
         try:
             return sum(
                 1 for g in self.data.get('groups', [])
@@ -99,7 +101,6 @@ class ConnectionsDraft(models.Model):
             return 0
 
     def preview_title(self):
-        """First non-empty category name, for display."""
         try:
             for g in self.data.get('groups', []):
                 if g.get('category', '').strip():
