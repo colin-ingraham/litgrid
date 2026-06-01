@@ -49,15 +49,16 @@
 
     {% if puzzles %}
     <div class="puzzle-table">
-        <div class="puzzle-table__header">
+        <div class="puzzle-table__header" style="grid-template-columns: 50px 100px 110px 100px 1fr 120px;">
             <span>#</span>
             <span>Status</span>
             <span>Release Date</span>
             <span>Created</span>
+            <span>Stats</span>
             <span>Actions</span>
         </div>
         {% for puzzle in puzzles %}
-        <div class="puzzle-table__row">
+        <div class="puzzle-table__row" style="grid-template-columns: 50px 100px 110px 100px 1fr 120px;">
             <span class="puzzle-number-cell">#{{ forloop.revcounter }}</span>
             <span>
                 {% if puzzle.is_released %}
@@ -76,6 +77,18 @@
                 {% endif %}
             </span>
             <span class="puzzle-created">{{ puzzle.created_at|date:"M d, Y" }}</span>
+            <span class="puzzle-stats">
+                {% if puzzle.is_released and puzzle._stats.plays %}
+                    <span class="stat-chip">▶ {{ puzzle._stats.plays }}</span>
+                    <span class="stat-chip">✓ {{ puzzle._stats.win_rate }}</span>
+                    <span class="stat-chip">✗ {{ puzzle._stats.avg_mistakes }} avg</span>
+                    <span class="stat-chip">↗ {{ puzzle._stats.plays_this_week }}w</span>
+                {% elif puzzle.is_released %}
+                    <span style="opacity:0.3; font-size:0.75rem;">No plays yet</span>
+                {% else %}
+                    <span style="opacity:0.2; font-size:0.75rem;">—</span>
+                {% endif %}
+            </span>
             <span class="puzzle-actions">
                 {% if puzzle.is_released %}
                     <a href="/connections/{{ puzzle.id }}/" class="table-link">Play</a>

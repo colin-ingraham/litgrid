@@ -75,6 +75,30 @@ class ConnectionsBookEntry(models.Model):
         return f"{self.group} | Slot {self.slot}: {self.book.title}"
 
 
+class PuzzleCompletion(models.Model):
+    """
+    One row per finished game (won or lost).
+    session_key is Django's anonymous session identifier — no PII stored.
+    Unique on (puzzle, session_key) so replaying doesn't inflate counts.
+    """
+    puzzle        = models.ForeignKey(
+        ConnectionsPuzzle, on_delete=models.CASCADE,
+        related_name='completions',
+    )
+    session_key   = models.CharField(max_length=40, db_index=True)
+    won           = models.BooleanField()
+    mistakes_made = models.IntegerField(default=0)   # 0–4
+    completed_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('puzzle', 'session_key')]
+        ordering = ['-completed_at']
+
+    def __str__(self):
+        result = 'Won' if self.won else 'Lost'
+        return f"Puzzle #{self.puzzle_id} — {result} ({self.completed_at:%Y-%m-%d})"
+
+
 class ConnectionsDraft(models.Model):
     created_by = models.ForeignKey(
         User, on_delete=models.CASCADE,

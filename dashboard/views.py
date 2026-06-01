@@ -82,10 +82,46 @@ def _get_or_fetch_book(google_book_id):
 
 @login_required
 def dashboard_home(request):
-    puzzles = ConnectionsPuzzle.objects.select_related('created_by').order_by('-id')[:20]
-    drafts  = ConnectionsDraft.objects.filter(created_by=request.user).order_by('-updated_at')
+    from django.db.models import Count, Avg, Q
+    from django.utils import timezone
+    from datetime import timedelta
+    from .models import PuzzleCompletion
+
+    puzzles_qs = ConnectionsPuzzle.objects.select_related('created_by').order_by('-id')[:50]
+    drafts     = ConnectionsDraft.objects.filter(created_by=request.user).order_by('-updated_at')
+
+    # Attach stats to each puzzle
+    one_week_ago = timezone.now() - timedelta(days=7)
+    puzzle_list  = list(puzzles_qs)
+    puzzle_ids   = [p.id for p in puzzle_list]
+
+    # Aggregate all at once to avoid N+1 queries
+    stats = (
+        PuzzleCompletion.objects
+        .filter(puzzle_id__in=puzzle_ids)
+        .values('puzzle_id')
+        .annotate(
+            total_plays=Count('id'),
+            wins=Count('id', filter=Q(won=True)),
+            avg_mistakes=Avg('mistakes_made'),
+            plays_this_week=Count('id', filter=Q(completed_at__gte=one_week_ago)),
+        )
+    )
+    stats_map = {s['puzzle_id']: s for s in stats}
+
+    for puzzle in puzzle_list:
+        s = stats_map.get(puzzle.id, {})
+        total = s.get('total_plays', 0)
+        wins  = s.get('wins', 0)
+        puzzle._stats = {
+            'plays':         total,
+            'win_rate':      f"{round(wins / total * 100)}%" if total else '—',
+            'avg_mistakes':  f"{round(s['avg_mistakes'], 1)}" if s.get('avg_mistakes') is not None else '—',
+            'plays_this_week': s.get('plays_this_week', 0),
+        }
+
     context = {
-        'puzzles': puzzles,
+        'puzzles': puzzle_list,
         'drafts':  drafts,
     }
     return render(request, 'dashboard/home.html', context)

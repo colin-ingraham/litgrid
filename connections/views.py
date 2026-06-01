@@ -147,21 +147,45 @@ def save_completion(request, puzzle_id):
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
 
-    # Write to completed
+    won           = data.get('won', False)
+    mistakes      = data.get('mistakes', 0)
+    guess_history = data.get('guessHistory', [])
+
+    # ── Session state ──────────────────────────────────────────────────────────
     completed_map = request.session.get(SESSION_COMPLETE, {})
     completed_map[str(puzzle_id)] = {
-        'guessHistory': data.get('guessHistory', []),
-        'mistakes':     data.get('mistakes', 0),
-        'won':          data.get('won', False),
+        'guessHistory': guess_history,
+        'mistakes':     mistakes,
+        'won':          won,
     }
     request.session[SESSION_COMPLETE] = completed_map
 
-    # Clear in-progress entry — no longer needed
     progress_map = request.session.get(SESSION_PROGRESS, {})
     progress_map.pop(str(puzzle_id), None)
     request.session[SESSION_PROGRESS] = progress_map
 
     request.session.modified = True
+
+    # ── Persist to PuzzleCompletion ────────────────────────────────────────────
+    # Ensure the session has a key so we can identify this player anonymously
+    if not request.session.session_key:
+        request.session.create()
+
+    try:
+        from dashboard.models import PuzzleCompletion, ConnectionsPuzzle
+        puzzle = ConnectionsPuzzle.objects.filter(pk=puzzle_id).first()
+        if puzzle:
+            PuzzleCompletion.objects.update_or_create(
+                puzzle=puzzle,
+                session_key=request.session.session_key,
+                defaults={
+                    'won':           won,
+                    'mistakes_made': mistakes,
+                },
+            )
+    except Exception:
+        pass  # never let analytics failure break the player experience
+
     return JsonResponse({'success': True})
 
 
